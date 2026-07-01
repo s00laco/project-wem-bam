@@ -32,12 +32,11 @@ The application should remain lightweight, responsive and easy to use.
 
 ## Intended Users
 
-- Starfield modders
-- Fallout 4 modders (future)
-- Skyrim Special Edition modders (future)
-- Anyone working with Bethesda Wwise audio
+Wem Bam is primarily designed for Starfield modders working with Bethesda's Wwise audio pipeline.
 
-Although Starfield is the initial focus, the architecture should not assume a single game forever.
+The application is intentionally focused on Wwise-based game audio rather than attempting to support every Bethesda title or audio format.
+
+Future support for additional Wwise-based games may be explored if appropriate.
 
 ## Core Features
 
