@@ -51,17 +51,70 @@ Replace the Search button with live searching as the user types.
 
 ---
 
-## Multiple Views
+## Filter Tabs
 
 **Status:** Future
 
-Allow multiple search tabs, similar to Creation Kit's Object Window or Foobar2000 playlists.
+Support multiple filter tabs, similar to multiple Object Window tabs in the Creation Kit or playlists in Foobar2000.
 
-Each tab should maintain its own:
+Each tab maintains its own independent:
 
-- Search
+- Selected Collection
+- Filter text
+- Results list
+- Selected sound
+- Sort order
+
+The first tab is created automatically but behaves exactly like any other tab.
+
+Users should be able to:
+
+- Create tabs
+- Close tabs
+- Rename tabs directly by clicking the tab title
+
+Example workflow:
+
+Tab 1:
+Favourites filtered by "reactor"
+
+Tab 2:
+All Sounds filtered by "alarm"
+
+Tab 3:
+Industrial collection filtered by "steam"
+
+Switching tabs restores the entire working context instantly.
+
+Tabs should persist between sessions.
+
+Reopening Wem Bam should restore the user's previous workspaces, including:
+
+- Open tabs
+- Tab names
+- Selected Collection
+- Filter text
 - Results
-- Selection
+- Selected sound
+
+---
+
+## Workspace Layout
+
+**Status:** Future
+
+Remember the user's preferred application layout between sessions.
+
+Examples include:
+
+- Window size and position
+- Panel sizes
+- Splitter positions
+- Column widths
+- Column visibility
+- Sort order
+
+The application should restore the layout automatically when reopened.
 
 ---
 
@@ -235,18 +288,35 @@ Support:
 
 # Library
 
-## Tree Navigation
+## Collection Browser
 
 **Status:** Investigation
 
-Investigate an optional tree view for navigating:
+Replace the current Sources panel with a Collection Browser.
 
-- Collections
-- Tags
+The Collection Browser represents logical groups of sounds rather than physical storage locations.
+
+Built-in collections may include:
+
+- All Sounds
 - Favourites
-- History
 
-This should remain optional until real-world usage demonstrates a clear benefit over a flat search-driven workflow.
+User-created collections appear beneath these.
+
+Selecting any collection immediately filters the Results list. Additional text entered into the Filter field further narrows the currently selected collection.
+
+Collections should never be "opened" in a separate window. Selecting a collection simply changes the active view.
+
+Collection management should be available via both toolbar buttons and right-click context menus.
+
+Common actions include:
+
+- New Collection
+- Rename Collection
+- Delete Collection
+- Duplicate Collection
+
+Future collections should remain fully user-configurable, including the ability to remove default collections if desired.
 
 ---
 
