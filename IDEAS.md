@@ -295,6 +295,7 @@ Support:
 Replace the current Sources panel with a Collection Browser.
 
 The Collection Browser represents logical groups of sounds rather than physical storage locations.
+The Collection Browser is the application's primary navigation mechanism.
 
 Built-in collections may include:
 

@@ -5,8 +5,229 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WemBam"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="Wem Bam"
+        Height="720"
+        MinHeight="600"
+        Width="1180"
+        MinWidth="960">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="Add Source..." />
+                <MenuItem Header="Settings" />
+                <Separator />
+                <MenuItem Header="Exit" />
+            </MenuItem>
+            <MenuItem Header="_Sources">
+                <MenuItem Header="Refresh Sources" />
+                <MenuItem Header="Manage Sources" />
+            </MenuItem>
+            <MenuItem Header="_Playback">
+                <MenuItem Header="Play" />
+                <MenuItem Header="Pause" />
+                <MenuItem Header="Stop" />
+            </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem Header="Show Details" IsCheckable="True" IsChecked="True" />
+                <MenuItem Header="Show History" IsCheckable="True" IsChecked="True" />
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="About Wem Bam" />
+            </MenuItem>
+        </Menu>
 
-    </Grid>
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <TextBlock Text="Ready" />
+            </StatusBarItem>
+            <Separator />
+            <StatusBarItem>
+                <TextBlock Text="0 sounds indexed" />
+            </StatusBarItem>
+            <Separator />
+            <StatusBarItem>
+                <TextBlock Text="No source selected" />
+            </StatusBarItem>
+        </StatusBar>
+
+        <Border DockPanel.Dock="Bottom"
+                Padding="12"
+                BorderBrush="#D0D0D0"
+                BorderThickness="0,1,0,0"
+                Background="#F5F5F5">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="120" />
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0" Content="Play" Width="72" Margin="0,0,8,0" />
+                <Button Grid.Column="1" Content="Pause" Width="72" Margin="0,0,8,0" />
+                <Button Grid.Column="2" Content="Stop" Width="72" />
+
+                <Slider Grid.Column="4"
+                        Minimum="0"
+                        Maximum="100"
+                        Value="0"
+                        VerticalAlignment="Center" />
+
+                <TextBlock Grid.Column="6"
+                           Text="Volume"
+                           VerticalAlignment="Center"
+                           Margin="0,0,8,0" />
+                <Slider Grid.Column="7"
+                        Minimum="0"
+                        Maximum="100"
+                        Value="75"
+                        VerticalAlignment="Center" />
+            </Grid>
+        </Border>
+
+        <Grid Margin="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="12" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="12" />
+                <ColumnDefinition Width="300" />
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="220" />
+                </Grid.RowDefinitions>
+
+                <GroupBox Header="Sources">
+                    <DockPanel Margin="8">
+                        <StackPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+                            <Button Content="Add Source..." Margin="0,0,0,6" />
+                            <Button Content="Refresh" />
+                        </StackPanel>
+
+                        <ListBox>
+                            <ListBoxItem Content="All Indexed Audio" />
+                            <ListBoxItem Content="Source Folders" />
+                            <ListBoxItem Content="BA2 Archives" />
+                            <ListBoxItem Content="Favourites" />
+                            <ListBoxItem Content="Recently Played" />
+                        </ListBox>
+                    </DockPanel>
+                </GroupBox>
+
+                <GroupBox Grid.Row="2" Header="Collections">
+                    <ListBox Margin="8">
+                        <ListBoxItem Content="Ambient" />
+                        <ListBoxItem Content="Machinery" />
+                        <ListBoxItem Content="UI Sounds" />
+                        <ListBoxItem Content="Unsorted" />
+                    </ListBox>
+                </GroupBox>
+            </Grid>
+
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <GroupBox Header="Search">
+                    <Grid Margin="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="8" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBox Grid.Column="0"
+                                 Height="28"
+                                 VerticalContentAlignment="Center"
+                                 Text="Search by filename, path, event name or file ID" />
+                        <Button Grid.Column="2" Content="Search" Width="90" />
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox Grid.Row="2" Header="Results">
+                    <DataGrid Margin="8"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="WEM File" Width="2*" />
+                            <DataGridTextColumn Header="Event" Width="2*" />
+                            <DataGridTextColumn Header="Source" Width="*" />
+                            <DataGridTextColumn Header="Tags" Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </GroupBox>
+            </Grid>
+
+            <Grid Grid.Column="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="180" />
+                </Grid.RowDefinitions>
+
+                <GroupBox Header="Selected Sound">
+                    <Grid Margin="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="File:" FontWeight="SemiBold" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" Text="No sound selected" />
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Event:" FontWeight="SemiBold" Margin="0,6,0,0" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="-" Margin="0,6,0,0" />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Source:" FontWeight="SemiBold" Margin="0,6,0,0" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="-" Margin="0,6,0,0" />
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Path:" FontWeight="SemiBold" Margin="0,6,0,0" />
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="-" Margin="0,6,0,0" TextWrapping="Wrap" />
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox Grid.Row="2" Header="Notes">
+                    <TextBox Margin="8"
+                             AcceptsReturn="True"
+                             TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto"
+                             Text="Personal notes for the selected sound." />
+                </GroupBox>
+
+                <GroupBox Grid.Row="4" Header="Tags">
+                    <DockPanel Margin="8">
+                        <Button DockPanel.Dock="Bottom"
+                                Content="Add Tag"
+                                Margin="0,8,0,0" />
+                        <ListBox>
+                            <ListBoxItem Content="Ambient" />
+                            <ListBoxItem Content="Music" />
+                            <ListBoxItem Content="UI" />
+                            <ListBoxItem Content="Weapon" />
+                        </ListBox>
+                    </DockPanel>
+                </GroupBox>
+            </Grid>
+        </Grid>
+    </DockPanel>
 </Window>
