@@ -1,94 +1,250 @@
 # Ideas
 
-These are feature ideas and observations gathered during development.
+This document captures ideas, observations and possible future enhancements.
 
-Inclusion here does not imply priority or commitment.
+Items in this document are **not commitments** and should not be interpreted as part of the roadmap unless they are promoted into `ROADMAP.md`.
+
+The goal is simply to avoid losing good ideas while keeping the roadmap focused.
+
+---
+
+# User Experience
+
+## Playback Menu
+
+**Status:** Under Consideration
+
+### Observation
+
+Playback controls are permanently visible in the main window.
+
+### Idea
+
+Remove the Playback menu entirely.
+
+### Reason
+
+Playback is a frequent action that is faster via toolbar buttons or keyboard shortcuts than navigating menus.
 
 ---
 
 ## Search
 
-### Predictive Search
+**Status:** Future
 
-Investigate predictive / incremental searching similar to the Creation Kit Object Window.
+### Idea
 
-Possible behaviours:
-
-- live filtering
-- auto-complete
-- ranked suggestions
-- recent searches
+Replace the Search button with live searching as the user types.
 
 ---
 
-### Multiple Search Tabs
+## Window Layout
 
-Allow multiple search tabs.
+**Status:** Future
 
-Possible use cases:
+### Ideas
 
-- Reactor sounds
-- UI sounds
-- Creature sounds
-
-Similar to:
-
-- CK Object Window
-- Foobar2000 playlists
-- Browser tabs
+- Remember window layout
+- Remember panel sizes
+- Remember column widths
+- Remember sort order
 
 ---
 
-## Playback
+## Multiple Views
 
-### Loop Modes
+**Status:** Future
+
+Allow multiple search tabs, similar to Creation Kit's Object Window or Foobar2000 playlists.
+
+Each tab should maintain its own:
+
+- Search
+- Results
+- Selection
+
+---
+
+# Playback
+
+## Keyboard Shortcuts
+
+**Status:** Future
+
+Suggested defaults:
+
+- Space → Play / Pause
+- Enter → Play selected
+- Ctrl+Enter → Play collection
+- Left / Right → Previous / Next
+- Ctrl+L → Toggle looping
+
+---
+
+## Playback Modes
+
+**Status:** Future
 
 Support:
 
-- no loop
-- loop current file
-- loop current queue
+- Play single sound
+- Queue playback
+- Loop single sound
+- Loop queue
+- Shuffle queue
 
 ---
 
-### Queue Playback
+# Search
 
-Play sounds sequentially from:
+## Predictive Search
 
-- search results
-- collections
-- favourites
-- history
+**Status:** Future
 
----
-
-### Sorting
-
-Allow queue ordering by:
-
-- filename
-- path
-- random
-- recently added
-- custom order
+Update results while typing.
 
 ---
 
-### Play Entire Library
+## Search Ranking
 
-Allow playback across the current filtered result set.
+**Status:** Future
+
+Allow weighting of:
+
+- Event Name
+- Generated WEM filename
+- User Tags
+- Collections
+- Notes
+- Object Path
+
+---
+
+## Search Behaviour
+
+**Status:** Future
+
+Investigate options such as:
+
+- Token-based searching
+- Wildcards
+- Fuzzy matching
+- Adjustable ranking
+
+---
+
+# Collections
+
+## Collections
+
+**Status:** Future
+
+Collections represent user projects rather than simple favourites.
 
 Examples:
 
-- entire indexed library
-- current search
-- current collection
-- current tag
+- Industrial
+- Reactors
+- Horror
+- UI
+- Current Mod
 
-Playback follows the current sort order.
+Events may belong to multiple collections.
 
 ---
 
-## Future Investigation
+## Smart Collections
 
-...
+**Status:** Investigation
+
+Collections generated automatically from rules or searches.
+
+---
+
+# Tags
+
+## Tag Management
+
+**Status:** Future
+
+Support:
+
+- Unlimited tags
+- Multiple tags per event
+- Easy editing
+- Search by tags
+
+---
+
+# Notes
+
+## Rich Notes
+
+**Status:** Future
+
+Support:
+
+- Multi-line notes
+- Auto-save
+- Searchable notes
+
+---
+
+## Creation Kit References
+
+**Status:** Investigation
+
+Allow users to record confirmed Creation Kit information.
+
+Possible fields:
+
+- Form Name
+- Form Type
+- Comments
+
+This information should always remain user-editable.
+
+---
+
+# Integration
+
+## Foobar2000
+
+**Status:** Planned
+
+Continue using Foobar2000 for playback rather than embedding an audio player.
+
+---
+
+## Wwise
+
+**Status:** Investigation
+
+Investigate possible integration with Wwise in the future.
+
+---
+
+# Interface Polish
+
+**Status:** Future
+
+Ideas include:
+
+- Dark mode
+- Resizable panels
+- Adjustable columns
+- Column visibility
+- Progress indicators
+- Better status information
+
+---
+
+# Nice-to-Have
+
+Ideas worth remembering but intentionally outside the current roadmap.
+
+- Drag & drop WEM files
+- Export search results
+- Custom keyboard shortcut configuration
+- Search history
+- Favourite searches
