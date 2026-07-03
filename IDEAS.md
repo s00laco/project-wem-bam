@@ -95,6 +95,33 @@ Support:
 
 ---
 
+## Playback Timeline
+
+**Status:** Future
+
+Display:
+
+- Elapsed time
+- Remaining time
+- Total duration
+- Scrubbable playback position
+
+---
+
+## Waveform Display
+
+**Status:** Investigation
+
+Display a waveform above the playback timeline to provide a visual representation of the audio.
+
+Potential benefits:
+
+- Identify silence
+- Spot transient sounds
+- Scrub to specific sections more accurately
+
+---
+
 # Search
 
 ## Predictive Search
@@ -130,6 +157,22 @@ Investigate options such as:
 - Wildcards
 - Fuzzy matching
 - Adjustable ranking
+
+---
+
+## Filters
+
+**Status:** Future
+
+Optional filters to narrow search results.
+
+Possible examples:
+
+- Source
+- Collection
+- Tags
+- File Type
+- Archive
 
 ---
 
@@ -187,6 +230,23 @@ Support:
 - Multi-line notes
 - Auto-save
 - Searchable notes
+
+---
+
+# Library
+
+## Tree Navigation
+
+**Status:** Investigation
+
+Investigate an optional tree view for navigating:
+
+- Collections
+- Tags
+- Favourites
+- History
+
+This should remain optional until real-world usage demonstrates a clear benefit over a flat search-driven workflow.
 
 ---
 
