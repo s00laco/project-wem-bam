@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using WemBam.Models;
@@ -18,11 +19,13 @@ namespace WemBam.Services
 
         public bool AddSource(Source source)
         {
+            ArgumentNullException.ThrowIfNull(source);
+
             if (Sources.Any(existing =>
                 string.Equals(
                     existing.Path,
                     source.Path,
-                    System.StringComparison.OrdinalIgnoreCase)))
+                    StringComparison.OrdinalIgnoreCase)))
             {
                 return false;
             }
@@ -33,6 +36,8 @@ namespace WemBam.Services
 
         public bool RemoveSource(Source source)
         {
+            ArgumentNullException.ThrowIfNull(source);
+
             return Sources.Remove(source);
         }
     }

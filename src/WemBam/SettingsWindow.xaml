@@ -90,7 +90,9 @@
 					</ListBox.ItemContainerStyle>
 
 					<ListBoxItem Content="General"/>
+
 					<ListBoxItem Content="Sources"/>
+
 					<ListBoxItem Content="Advanced"/>
 
 				</ListBox>
@@ -197,30 +199,37 @@
                                FontSize="20"
                                FontWeight="SemiBold"/>
 
-					<ListView x:Name="SourcesListView"
-                              Grid.Row="2">
+					<DataGrid x:Name="SourcesDataGrid"
+                              Grid.Row="2"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              CanUserResizeRows="False"
+                              CanUserSortColumns="True"
+                              IsReadOnly="True"
+                              SelectionMode="Single"
+                              SelectionUnit="FullRow">
 
-						<ListView.View>
+						<DataGrid.Columns>
 
-							<GridView>
-
-								<GridViewColumn Header="Name"
+							<DataGridTextColumn Header="Name"
+                                                Binding="{Binding DisplayName}"
                                                 Width="180"
-                                                DisplayMemberBinding="{Binding DisplayName}" />
+                                                SortMemberPath="DisplayName"/>
 
-								<GridViewColumn Header="Type"
+							<DataGridTextColumn Header="Type"
+                                                Binding="{Binding Type}"
                                                 Width="80"
-                                                DisplayMemberBinding="{Binding Type}" />
+                                                SortMemberPath="Type"/>
 
-								<GridViewColumn Header="Path"
-                                                Width="420"
-                                                DisplayMemberBinding="{Binding Path}" />
+							<DataGridTextColumn Header="Path"
+                                                Binding="{Binding Path}"
+                                                Width="*"
+                                                SortMemberPath="Path"/>
 
-							</GridView>
+						</DataGrid.Columns>
 
-						</ListView.View>
-
-					</ListView>
+					</DataGrid>
 
 					<StackPanel Grid.Row="4"
                                 Orientation="Horizontal">

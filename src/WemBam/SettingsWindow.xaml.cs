@@ -15,7 +15,7 @@ namespace WemBam
         {
             InitializeComponent();
 
-            SourcesListView.ItemsSource = _sourceManager.Sources;
+            SourcesDataGrid.ItemsSource = _sourceManager.Sources;
 
             ShowGeneralPage();
             NavigationListBox.SelectedIndex = 0;
@@ -76,6 +76,9 @@ namespace WemBam
                     return;
                 }
 
+                int addedCount = 0;
+                int duplicateCount = 0;
+
                 Source source = new()
                 {
                     DisplayName = Path.GetFileName(dialog.FolderName),
@@ -88,7 +91,16 @@ namespace WemBam
                     source.DisplayName = dialog.FolderName;
                 }
 
-                _sourceManager.AddSource(source);
+                if (_sourceManager.AddSource(source))
+                {
+                    addedCount++;
+                }
+                else
+                {
+                    duplicateCount++;
+                }
+
+                ShowAddSourcesSummary(addedCount, duplicateCount);
             }
             catch (Exception)
             {
@@ -119,6 +131,9 @@ namespace WemBam
                     return;
                 }
 
+                int addedCount = 0;
+                int duplicateCount = 0;
+
                 foreach (string fileName in dialog.FileNames)
                 {
                     Source source = new()
@@ -128,8 +143,17 @@ namespace WemBam
                         Type = SourceType.File
                     };
 
-                    _sourceManager.AddSource(source);
+                    if (_sourceManager.AddSource(source))
+                    {
+                        addedCount++;
+                    }
+                    else
+                    {
+                        duplicateCount++;
+                    }
                 }
+
+                ShowAddSourcesSummary(addedCount, duplicateCount);
             }
             catch (Exception)
             {
@@ -146,7 +170,7 @@ namespace WemBam
         {
             try
             {
-                if (SourcesListView.SelectedItem is not Source source)
+                if (SourcesDataGrid.SelectedItem is not Source source)
                 {
                     return;
                 }
@@ -163,6 +187,39 @@ namespace WemBam
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
+        }
+
+        private void ShowAddSourcesSummary(int addedCount, int duplicateCount)
+        {
+            if (addedCount == 0)
+            {
+                MessageBox.Show(
+                    "No new sources were added.\n\nThe selected source(s) already exist.",
+                    "Sources",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                return;
+            }
+
+            string message = addedCount == 1
+                ? "Added 1 source."
+                : $"Added {addedCount} sources.";
+
+            if (duplicateCount > 0)
+            {
+                message += Environment.NewLine + Environment.NewLine;
+
+                message += duplicateCount == 1
+                    ? "1 duplicate source was skipped."
+                    : $"{duplicateCount} duplicate sources were skipped.";
+            }
+
+            MessageBox.Show(
+                message,
+                "Sources",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
         }
 
         protected override void OnClosed(EventArgs e)

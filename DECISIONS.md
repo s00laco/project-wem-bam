@@ -89,3 +89,62 @@ Examples include:
 This allows the project to focus development effort on its core purpose: helping users discover, preview and organise game audio.
 
 Established tools are generally more mature, better tested and actively maintained by their respective communities.
+
+## 2026-07-04
+
+### Source Lifetime
+
+**Decision**
+
+Source management is owned by a dedicated `SourceManager` service rather than by individual windows.
+
+**Reason**
+
+Source data represents application state rather than user interface state.
+
+Keeping the source list independent of the Settings window allows multiple windows and future features to share the same data while keeping responsibilities clearly separated.
+
+It also provides a clean transition to persistent SQLite storage later without requiring changes to the user interface.
+
+---
+
+## 2026-07-04
+
+### Unified File Sources
+
+**Decision**
+
+Wem Bam treats supported audio-related files as generic file sources rather than creating separate workflows for BA2 archives and individual audio files.
+
+Initially supported file types include:
+
+- BA2
+- BNK
+- WEM
+- WAV
+
+Additional file types may be added in the future.
+
+**Reason**
+
+The application is intended to help users organise and discover audio regardless of where it originated.
+
+Using a single **Add File...** workflow keeps the interface simple while allowing future expansion.
+
+---
+
+## 2026-07-04
+
+### Duplicate Source Handling
+
+**Decision**
+
+When multiple sources are added, duplicate sources are skipped and reported using a single summary message.
+
+The operation continues processing all selected sources rather than stopping at the first duplicate.
+
+**Reason**
+
+Users will often add multiple files or archives at once.
+
+Summarising the results provides useful feedback without interrupting the workflow with unnecessary message boxes.
