@@ -321,6 +321,32 @@ Future collections should remain fully user-configurable, including the ability 
 
 ---
 
+## Backup & Restore
+
+**Status:** Future
+
+Allow users to back up and restore their complete Wem Bam library.
+
+The backup should preserve all user-created information, including:
+
+- Sources
+- Notes
+- Tags
+- Collections
+- Favourites
+- History
+- Settings
+
+The primary workflow should allow users to:
+
+- Create a backup
+- Restore a backup
+- Choose the backup location
+
+The implementation should not require users to manually locate or copy the SQLite database.
+
+---
+
 ## Creation Kit References
 
 **Status:** Investigation

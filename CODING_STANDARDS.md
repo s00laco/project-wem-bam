@@ -37,6 +37,21 @@ Where appropriate:
 - present clear messages to the user
 - avoid application crashes
 
+## Time and Date Handling
+
+All timestamps stored in the SQLite database must use UTC Unix time in milliseconds.
+
+Rules:
+
+- Store timestamps in SQLite as `INTEGER`.
+- Store only UTC timestamps.
+- Never store local time in the database.
+- Use `DateTimeOffset` throughout the application.
+- Convert between Unix time and `DateTimeOffset` only within the persistence layer.
+- Convert to the user's local time only when displaying dates in the user interface.
+
+This keeps storage implementation details isolated from the rest of the application and avoids timezone and daylight saving issues.
+
 ## User Experience
 
 Performance and responsiveness are priorities.
