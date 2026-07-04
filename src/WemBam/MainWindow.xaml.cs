@@ -1,24 +1,53 @@
-﻿using System.Text;
+﻿using System;
+using System.Linq;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace WemBam
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void SettingsMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                SettingsWindow? existingWindow = Application.Current.Windows
+                    .OfType<SettingsWindow>()
+                    .FirstOrDefault();
+
+                if (existingWindow != null)
+                {
+                    if (existingWindow.WindowState == WindowState.Minimized)
+                    {
+                        existingWindow.WindowState = WindowState.Normal;
+                    }
+
+                    existingWindow.Activate();
+                    existingWindow.Focus();
+                    return;
+                }
+
+                SettingsWindow settingsWindow = new()
+                {
+                    Owner = this
+                };
+
+                settingsWindow.Show();
+            }
+            catch (Exception)
+            {
+                // TODO: Log exception once logging is implemented.
+
+                MessageBox.Show(
+                    "Wem Bam was unable to open the Settings window.",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
         }
     }
 }

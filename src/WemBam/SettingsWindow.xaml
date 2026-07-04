@@ -1,0 +1,299 @@
+<Window x:Class="WemBam.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Settings"
+        Height="650"
+        Width="900"
+        MinHeight="500"
+        MinWidth="700"
+        WindowStartupLocation="CenterOwner">
+
+	<Grid Margin="10">
+
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+
+		<Grid Grid.Row="0">
+
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="170"/>
+				<ColumnDefinition Width="12"/>
+				<ColumnDefinition Width="*"/>
+			</Grid.ColumnDefinitions>
+
+			<!-- ===================================================== -->
+			<!-- Left Navigation                                       -->
+			<!-- ===================================================== -->
+
+			<Border Grid.Column="0"
+                    BorderBrush="#FFD8D8D8"
+                    BorderThickness="0,0,1,0"
+                    Padding="0,4,8,0">
+
+				<ListBox x:Name="NavigationListBox"
+                         SelectedIndex="0"
+                         BorderThickness="0">
+
+					<ListBox.ItemContainerStyle>
+
+						<Style TargetType="ListBoxItem">
+
+							<Setter Property="Margin"
+                                    Value="0,0,0,4"/>
+
+							<Setter Property="Padding"
+                                    Value="10,8"/>
+
+							<Setter Property="HorizontalContentAlignment"
+                                    Value="Stretch"/>
+
+							<Setter Property="Template">
+
+								<Setter.Value>
+
+									<ControlTemplate TargetType="ListBoxItem">
+
+										<Border x:Name="ItemBorder"
+                                                Background="Transparent"
+                                                CornerRadius="4">
+
+											<ContentPresenter/>
+
+										</Border>
+
+										<ControlTemplate.Triggers>
+
+											<Trigger Property="IsSelected"
+                                                     Value="True">
+
+												<Setter TargetName="ItemBorder"
+                                                        Property="Background"
+                                                        Value="#FFE8E8E8"/>
+
+												<Setter Property="FontWeight"
+                                                        Value="SemiBold"/>
+
+											</Trigger>
+
+										</ControlTemplate.Triggers>
+
+									</ControlTemplate>
+
+								</Setter.Value>
+
+							</Setter>
+
+						</Style>
+
+					</ListBox.ItemContainerStyle>
+
+					<ListBoxItem Content="General"/>
+					<ListBoxItem Content="Sources"/>
+					<ListBoxItem Content="Advanced"/>
+
+				</ListBox>
+
+			</Border>
+
+			<!-- ===================================================== -->
+			<!-- Right Content Area                                    -->
+			<!-- ===================================================== -->
+
+			<Grid Grid.Column="2">
+
+				<!-- ================================================= -->
+				<!-- GENERAL PAGE                                      -->
+				<!-- ================================================= -->
+
+				<StackPanel x:Name="GeneralPage">
+
+					<TextBlock Text="General"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,20"/>
+
+					<CheckBox Content="Remember window layout"
+                              Margin="0,0,0,12"/>
+
+					<CheckBox Content="Remember filter tabs"
+                              Margin="0,0,0,20"/>
+
+					<Grid Margin="0,0,0,12">
+
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="180"/>
+							<ColumnDefinition Width="220"/>
+						</Grid.ColumnDefinitions>
+
+						<TextBlock Text="Default playback volume"
+                                   VerticalAlignment="Center"/>
+
+						<Slider Grid.Column="1"
+                                Minimum="0"
+                                Maximum="100"
+                                Value="75"/>
+
+					</Grid>
+
+					<Grid Margin="0,0,0,12">
+
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="180"/>
+							<ColumnDefinition Width="220"/>
+						</Grid.ColumnDefinitions>
+
+						<TextBlock Text="Theme"
+                                   VerticalAlignment="Center"/>
+
+						<ComboBox Grid.Column="1"
+                                  SelectedIndex="0">
+
+							<ComboBoxItem>System Default (Future)</ComboBoxItem>
+
+						</ComboBox>
+
+					</Grid>
+
+					<Grid>
+
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="180"/>
+							<ColumnDefinition Width="220"/>
+						</Grid.ColumnDefinitions>
+
+						<TextBlock Text="Startup behaviour"
+                                   VerticalAlignment="Center"/>
+
+						<ComboBox Grid.Column="1"
+                                  SelectedIndex="0">
+
+							<ComboBoxItem>Normal (Placeholder)</ComboBoxItem>
+
+						</ComboBox>
+
+					</Grid>
+
+				</StackPanel>
+
+				<!-- ================================================= -->
+				<!-- SOURCES PAGE                                      -->
+				<!-- ================================================= -->
+
+				<Grid x:Name="SourcesPage"
+                      Visibility="Collapsed">
+
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="12"/>
+						<RowDefinition Height="*"/>
+						<RowDefinition Height="12"/>
+						<RowDefinition Height="Auto"/>
+					</Grid.RowDefinitions>
+
+					<TextBlock Grid.Row="0"
+                               Text="Sources"
+                               FontSize="20"
+                               FontWeight="SemiBold"/>
+
+					<ListView x:Name="SourcesListView"
+                              Grid.Row="2">
+
+						<ListView.View>
+
+							<GridView>
+
+								<GridViewColumn Header="Name"
+                                                Width="180"
+                                                DisplayMemberBinding="{Binding DisplayName}" />
+
+								<GridViewColumn Header="Type"
+                                                Width="80"
+                                                DisplayMemberBinding="{Binding Type}" />
+
+								<GridViewColumn Header="Path"
+                                                Width="420"
+                                                DisplayMemberBinding="{Binding Path}" />
+
+							</GridView>
+
+						</ListView.View>
+
+					</ListView>
+
+					<StackPanel Grid.Row="4"
+                                Orientation="Horizontal">
+
+						<Button x:Name="AddFolderButton"
+                                Content="Add Folder..."
+                                Width="110"
+                                Margin="0,0,8,0"
+                                Click="AddFolderButton_Click"/>
+
+						<Button x:Name="AddFileButton"
+                                Content="Add File..."
+                                Width="110"
+                                Margin="0,0,8,0"
+                                Click="AddFileButton_Click"/>
+
+						<Button x:Name="RemoveSourceButton"
+                                Content="Remove"
+                                Width="90"
+                                Click="RemoveSourceButton_Click"/>
+
+					</StackPanel>
+
+				</Grid>
+				<!-- ================================================= -->
+				<!-- ADVANCED PAGE                                     -->
+				<!-- ================================================= -->
+
+				<StackPanel x:Name="AdvancedPage"
+                            Visibility="Collapsed">
+
+					<TextBlock Text="Advanced"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               Margin="0,0,0,20"/>
+
+					<TextBlock Text="Advanced settings will appear here."
+                               FontStyle="Italic"
+                               Foreground="Gray"/>
+
+				</StackPanel>
+
+			</Grid>
+
+		</Grid>
+
+		<!-- ========================================================= -->
+		<!-- Bottom Buttons                                            -->
+		<!-- ========================================================= -->
+
+		<Border Grid.Row="1"
+                BorderBrush="#FFD8D8D8"
+                BorderThickness="0,1,0,0"
+                Padding="0,10,0,0">
+
+			<StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right">
+
+				<Button Content="OK"
+                        Width="90"
+                        IsDefault="True"
+                        Margin="0,0,8,0"
+                        Click="OkButton_Click"/>
+
+				<Button Content="Cancel"
+                        Width="90"
+                        IsCancel="True"
+                        Click="CancelButton_Click"/>
+
+			</StackPanel>
+
+		</Border>
+
+	</Grid>
+
+</Window>

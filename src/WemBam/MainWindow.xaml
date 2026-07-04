@@ -11,8 +11,15 @@
 
 		<!-- Top Menu -->
 		<Menu DockPanel.Dock="Top">
-			<MenuItem Header="_File"/>
+			<MenuItem Header="_File">
+				<MenuItem Header="Settings..."
+                          Click="SettingsMenuItem_Click"/>
+				<Separator/>
+				<MenuItem Header="E_xit"/>
+			</MenuItem>
+
 			<MenuItem Header="_View"/>
+
 			<MenuItem Header="_Help"/>
 		</Menu>
 
