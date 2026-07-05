@@ -170,3 +170,21 @@ The persistence layer is responsible for converting between the database represe
 Using UTC Unix timestamps provides a timezone-independent storage format that sorts efficiently and avoids daylight saving ambiguities.
 
 Keeping Unix timestamps confined to the persistence layer prevents storage implementation details from leaking into the rest of the application.
+
+---
+
+## 2026-07-05
+
+### Log Retention
+
+**Decision**
+
+Wem Bam automatically retains the 30 most recent log files.
+
+Older log files are deleted during application startup before a new session log is created.
+
+**Reason**
+
+This keeps disk usage bounded while preserving recent diagnostic information.
+
+Retention is based on the number of application sessions rather than elapsed time, ensuring consistent behaviour regardless of how frequently the application is used.
