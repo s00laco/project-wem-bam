@@ -394,6 +394,22 @@ Ideas include:
 - Progress indicators
 - Better status information
 
+## Status Feedback
+
+**Status:** Future
+
+Provide subtle visual feedback in the status bar when background operations complete.
+
+Examples include:
+
+- Soft green fade for successful completion.
+- Soft amber fade for completion with warnings.
+- Soft red fade for failed operations.
+
+The animation should be brief, non-intrusive and automatically return to the normal status bar appearance after a few seconds.
+
+This feedback supplements logging and progress reporting without interrupting the user's workflow.
+
 ---
 
 # Diagnostics
