@@ -25,7 +25,66 @@
 
 		<!-- Status Bar -->
 		<StatusBar DockPanel.Dock="Bottom">
-			<StatusBarItem Content="Ready"/>
+
+			<StatusBar.ToolTip>
+				<ToolTip x:Name="BackgroundTaskToolTip">
+					<StackPanel>
+
+						<TextBlock x:Name="StatusToolTipStatusText"/>
+
+						<TextBlock x:Name="StatusToolTipItemsProcessedText"/>
+
+						<TextBlock x:Name="StatusToolTipTotalItemsText"/>
+
+						<TextBlock x:Name="StatusToolTipElapsedText"/>
+
+					</StackPanel>
+				</ToolTip>
+			</StatusBar.ToolTip>
+
+			<StatusBarItem>
+
+				<Grid>
+
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="*"/>
+						<ColumnDefinition Width="Auto"/>
+						<ColumnDefinition Width="Auto"/>
+					</Grid.ColumnDefinitions>
+
+					<TextBlock x:Name="StatusTextBlock"
+                               Grid.Column="0"
+                               VerticalAlignment="Center"
+                               Text="Ready"/>
+
+					<ProgressBar x:Name="BackgroundTaskProgressBar"
+                                 Grid.Column="1"
+                                 Height="16"
+                                 Margin="12,0"
+                                 Minimum="0"
+                                 Maximum="100"
+                                 Value="0"
+                                 IsIndeterminate="False"
+                                 Visibility="Collapsed"/>
+
+					<TextBlock x:Name="PercentageTextBlock"
+                               Grid.Column="2"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Right"
+                               Text=""
+                               Visibility="Collapsed"/>
+
+					<TextBlock x:Name="ElapsedTimeTextBlock"
+                               Grid.Column="3"
+                               Margin="12,0,0,0"
+                               VerticalAlignment="Center"
+                               Text=""/>
+
+				</Grid>
+
+			</StatusBarItem>
+
 		</StatusBar>
 
 		<!-- Playback -->
