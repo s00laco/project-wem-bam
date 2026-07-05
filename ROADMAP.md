@@ -15,6 +15,7 @@ Build a fast, reliable WEM browser capable of indexing, searching and previewing
 - Modern desktop UI
 - Application settings
 - Logging
+- Background task framework
 - Persistent user preferences
 - Window state persistence
 

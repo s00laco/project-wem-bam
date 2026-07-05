@@ -58,6 +58,24 @@ Performance and responsiveness are priorities.
 
 Long-running operations should not block the UI.
 
+## Background Operations
+
+All long-running operations must execute through the BackgroundTaskManager.
+
+Long-running operations must not be started directly from the user interface.
+
+Background operations must:
+
+- Report progress through the BackgroundTaskManager.
+- Support cooperative cancellation.
+- Process work in small interruptible batches.
+- Leave the application in a consistent state if cancelled.
+- Log significant lifecycle events using the Logger.
+
+The BackgroundTaskManager coordinates execution only.
+
+Domain-specific work remains the responsibility of the operation being executed.
+
 ## Future Development
 
 New features should integrate cleanly with the existing architecture.

@@ -396,6 +396,24 @@ Ideas include:
 
 ---
 
+# Diagnostics
+
+## Log Viewer
+
+**Status:** Future
+
+Provide a built-in log viewer within Settings (likely under the Advanced section).
+
+The log viewer should:
+
+- Display available log files.
+- Allow users to read log files directly within Wem Bam.
+- Support copying log contents for troubleshooting and bug reports.
+
+The log viewer should be read-only and should not allow editing of log files.
+
+---
+
 # Nice-to-Have
 
 Ideas worth remembering but intentionally outside the current roadmap.

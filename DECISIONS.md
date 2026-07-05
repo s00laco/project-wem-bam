@@ -188,3 +188,91 @@ Older log files are deleted during application startup before a new session log 
 This keeps disk usage bounded while preserving recent diagnostic information.
 
 Retention is based on the number of application sessions rather than elapsed time, ensuring consistent behaviour regardless of how frequently the application is used.
+
+---
+
+## 2026-07-05
+
+### Background Task Framework
+
+**Decision**
+
+All long-running operations execute through a single BackgroundTaskManager.
+
+The BackgroundTaskManager is responsible for:
+
+- Starting operations.
+- Tracking progress.
+- Reporting elapsed time.
+- Handling cancellation.
+- Logging operation lifecycle events.
+- Reporting completion or failure.
+
+The BackgroundTaskManager does not perform domain-specific work.
+
+Individual operations (such as folder indexing or BA2 indexing) are responsible only for performing their own work and reporting progress back to the manager.
+
+**Reason**
+
+This keeps operational concerns separate from business logic, provides a consistent user experience across all long-running operations, and avoids duplicated infrastructure throughout the application.
+
+---
+
+### Single Background Operation
+
+**Decision**
+
+Only one background operation may execute at any time.
+
+While an operation is running:
+
+- The user interface remains responsive.
+- Additional long-running operations cannot be started.
+- The currently running operation may be cancelled.
+
+**Reason**
+
+Wem Bam is intended to remain simple and predictable.
+
+Supporting multiple concurrent operations or operation queues would add significant complexity with little practical benefit for the application's intended scope.
+
+---
+
+### Background Operation Behaviour
+
+**Decision**
+
+Background operations are processed in small interruptible batches.
+
+Between batches the application:
+
+- Updates progress.
+- Checks for cancellation.
+- Continues only if appropriate.
+
+Cancellation should feel immediate to the user while always leaving the application in a consistent state.
+
+**Reason**
+
+This provides responsive cancellation while allowing each operation to choose sensible batch sizes appropriate to the work being performed.
+
+---
+
+### Background Operation Outcomes
+
+**Decision**
+
+Every background operation ends in exactly one of the following states:
+
+- Completed
+- Completed with warnings
+- Cancelled
+- Failed
+
+Recoverable errors are logged and skipped where appropriate.
+
+Fatal errors terminate the operation cleanly.
+
+**Reason**
+
+This provides predictable behaviour for users and establishes a consistent lifecycle for every long-running operation in the application.
