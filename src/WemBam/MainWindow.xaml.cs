@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Windows;
+using WemBam.Logging;
 
 namespace WemBam
 {
@@ -38,9 +39,9 @@ namespace WemBam
 
                 settingsWindow.Show();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // TODO: Log exception once logging is implemented.
+                Logger.Error(ex, "Failed to open the Settings window.");
 
                 MessageBox.Show(
                     "Wem Bam was unable to open the Settings window.",

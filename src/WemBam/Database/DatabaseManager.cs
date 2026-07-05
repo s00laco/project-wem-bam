@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Microsoft.Data.Sqlite;
+using WemBam.Logging;
 
 namespace WemBam.Database
 {
@@ -34,7 +35,7 @@ namespace WemBam.Database
             }
             catch (Exception ex)
             {
-                // TODO: Log exception once logging is implemented.
+                Logger.Error(ex, "Failed to initialize the database.");
 
                 throw new InvalidOperationException(
                     "Failed to initialize the Wem Bam database.",
