@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using WemBam.Contracts;
+using WemBam.Logging;
 using WemBam.Models;
 
 namespace WemBam.Services
@@ -36,7 +37,8 @@ namespace WemBam.Services
         {
         }
 
-        public async Task<bool> StartAsync(IBackgroundOperation operation)
+        public async Task<bool> StartAsync(
+            IBackgroundOperation operation)
         {
             ArgumentNullException.ThrowIfNull(operation);
 
@@ -90,6 +92,10 @@ namespace WemBam.Services
             catch (Exception ex)
             {
                 _stopwatch.Stop();
+
+                Logger.Error(
+                    ex,
+                    "Background operation failed unexpectedly.");
 
                 BackgroundOperationResult result =
                     BackgroundOperationResult.Failed(ex.Message);

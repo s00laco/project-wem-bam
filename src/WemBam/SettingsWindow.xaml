@@ -192,6 +192,12 @@
 						<RowDefinition Height="*"/>
 						<RowDefinition Height="12"/>
 						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="20"/>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="12"/>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="12"/>
+						<RowDefinition Height="Auto"/>
 					</Grid.RowDefinitions>
 
 					<TextBlock Grid.Row="0"
@@ -253,7 +259,111 @@
 
 					</StackPanel>
 
+					<Separator Grid.Row="6"
+                               Margin="0,4"/>
+
+					<StackPanel Grid.Row="8">
+
+						<TextBlock Text="Indexing"
+                                   FontSize="16"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,12"/>
+
+						<Grid Margin="0,0,0,12">
+
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="120"/>
+								<ColumnDefinition Width="*"/>
+							</Grid.ColumnDefinitions>
+
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto"/>
+								<RowDefinition Height="8"/>
+								<RowDefinition Height="Auto"/>
+							</Grid.RowDefinitions>
+
+							<TextBlock Grid.Row="0"
+                                       Text="Index Status:"/>
+
+							<TextBlock x:Name="IndexStatusTextBlock"
+                                       Grid.Row="0"
+                                       Grid.Column="1"
+                                       Text="Not indexed"/>
+
+							<TextBlock Grid.Row="2"
+                                       Text="Last Indexed:"/>
+
+							<TextBlock x:Name="LastIndexedTextBlock"
+                                       Grid.Row="2"
+                                       Grid.Column="1"
+                                       Text="—"/>
+
+						</Grid>
+						<Separator Margin="0,0,0,12"/>
+
+						<StackPanel x:Name="IndexProgressPanel"
+                                    Visibility="Collapsed">
+
+							<ProgressBar x:Name="IndexProgressBar"
+                                         Height="18"
+                                         Minimum="0"
+                                         Maximum="100"
+                                         Margin="0,0,0,12"/>
+
+							<Grid Margin="0,0,0,4">
+
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="120"/>
+									<ColumnDefinition Width="*"/>
+								</Grid.ColumnDefinitions>
+
+								<TextBlock Text="Status:"/>
+
+								<TextBlock x:Name="CurrentOperationTextBlock"
+                                           Grid.Column="1"/>
+
+							</Grid>
+
+							<Grid Margin="0,0,0,4">
+
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="120"/>
+									<ColumnDefinition Width="*"/>
+								</Grid.ColumnDefinitions>
+
+								<TextBlock Text="Items Processed:"/>
+
+								<TextBlock x:Name="ItemsProcessedTextBlock"
+                                           Grid.Column="1"/>
+
+							</Grid>
+
+							<Grid Margin="0,0,0,12">
+
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="120"/>
+									<ColumnDefinition Width="*"/>
+								</Grid.ColumnDefinitions>
+
+								<TextBlock Text="Elapsed:"/>
+
+								<TextBlock x:Name="ElapsedTimeTextBlock"
+                                           Grid.Column="1"/>
+
+							</Grid>
+
+						</StackPanel>
+
+						<Button x:Name="IndexSourcesButton"
+                                Content="Index Sources"
+                                Width="130"
+                                HorizontalAlignment="Left"
+                                Click="IndexSourcesButton_Click"/>
+
+					</StackPanel>
+
 				</Grid>
+
 				<!-- ================================================= -->
 				<!-- ADVANCED PAGE                                     -->
 				<!-- ================================================= -->
@@ -283,7 +393,8 @@
 		<Border Grid.Row="1"
                 BorderBrush="#FFD8D8D8"
                 BorderThickness="0,1,0,0"
-                Padding="0,10,0,0">
+                Padding="0,10,0,0"
+                Margin="0,20,0,0">
 
 			<StackPanel Orientation="Horizontal"
                         HorizontalAlignment="Right">
