@@ -54,6 +54,8 @@ namespace WemBam
                 ElapsedTimer_Tick;
 
             ResetIndexingDisplay();
+
+            RefreshIndexStatusDisplay();
         }
 
         private void NavigationListBox_SelectionChanged(
@@ -192,21 +194,22 @@ namespace WemBam
                 switch (result.State)
                 {
                     case BackgroundTaskState.Completed:
-                        IndexStatusTextBlock.Text = "Up to date";
-                        LastIndexedTextBlock.Text =
-                            DateTime.Now.ToString("g");
+                        IndexStatusManager.Instance.SetUpToDate(
+                            result.ItemsProcessed);
                         break;
 
                     case BackgroundTaskState.CompletedWithWarnings:
-                        IndexStatusTextBlock.Text = "Partially indexed";
-                        LastIndexedTextBlock.Text =
-                            DateTime.Now.ToString("g");
+                        IndexStatusManager.Instance.SetPartiallyIndexed(
+                            result.ItemsProcessed);
                         break;
 
                     case BackgroundTaskState.Cancelled:
                     case BackgroundTaskState.Failed:
+                        IndexStatusManager.Instance.PreserveCurrentState();
                         break;
                 }
+
+                RefreshIndexStatusDisplay();
 
                 ResetIndexingDisplay();
             });
@@ -264,7 +267,22 @@ namespace WemBam
 
         private void MarkIndexOutOfDate()
         {
-            IndexStatusTextBlock.Text = "Out of date";
+            IndexStatusManager.Instance.SetOutOfDate();
+
+            RefreshIndexStatusDisplay();
+        }
+
+        private void RefreshIndexStatusDisplay()
+        {
+            IndexStatusTextBlock.Text =
+                IndexStatusManager.Instance.Status;
+
+            LastIndexedTextBlock.Text =
+                IndexStatusManager.Instance.LastIndexed.HasValue
+                    ? IndexStatusManager.Instance.LastIndexed.Value
+                        .ToLocalTime()
+                        .ToString("g")
+                    : "—";
         }
 
         private void AddFolderButton_Click(

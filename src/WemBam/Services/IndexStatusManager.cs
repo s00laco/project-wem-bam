@@ -26,7 +26,7 @@ namespace WemBam.Services
             int indexedFileCount)
         {
             Status = "Up to date";
-            LastIndexed = DateTimeOffset.Now;
+            LastIndexed = DateTimeOffset.UtcNow;
             IndexedFileCount = indexedFileCount;
         }
 
@@ -34,7 +34,7 @@ namespace WemBam.Services
             int indexedFileCount)
         {
             Status = "Partially indexed";
-            LastIndexed = DateTimeOffset.Now;
+            LastIndexed = DateTimeOffset.UtcNow;
             IndexedFileCount = indexedFileCount;
         }
 
