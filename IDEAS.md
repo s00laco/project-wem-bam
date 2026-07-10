@@ -430,6 +430,54 @@ The log viewer should be read-only and should not allow editing of log files.
 
 ---
 
+# Indexing
+
+## Optimise duplicate file discovery
+
+Currently duplicate file paths may be discovered when sources overlap (for example, indexing both a parent folder and one of its subfolders).
+
+Future improvement:
+
+- Detect duplicate file paths during discovery rather than relying on the database to reject them.
+- Maintain the UNIQUE constraint on IndexedFiles.FilePath as a safety net.
+- Consider using a HashSet<string> during indexing so each unique file is processed only once.
+
+Benefits:
+
+- Faster indexing.
+- Avoid unnecessary SQLite work.
+- Prevent duplicate-related exceptions.
+
+## Detect overlapping source folders
+
+Warn when one configured source is already contained within another configured source.
+
+Possible behaviour:
+
+- Highlight redundant sources.
+- Explain why they overlap.
+- Allow the user to remove the redundant source.
+
+This is a UX improvement only and should not be required for correct indexing.
+
+## Batch SQLite writes during indexing
+
+Current implementation opens a connection and writes one file at a time.
+
+Future improvement:
+
+- Use batched transactions during indexing.
+- Commit periodically (for example every 500 or 1000 files).
+
+Benefits:
+
+- Significantly improved indexing performance.
+- Reduced disk I/O.
+- Limited data loss if indexing is interrupted compared with a single large transaction.
+
+
+---
+
 # Nice-to-Have
 
 Ideas worth remembering but intentionally outside the current roadmap.

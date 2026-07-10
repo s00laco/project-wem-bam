@@ -51,5 +51,62 @@ namespace WemBam.Database
 
             return connection;
         }
+        public static void ClearIndexedFiles()
+        {
+            using SqliteConnection connection = OpenConnection();
+
+            using SqliteCommand command = connection.CreateCommand();
+
+            command.CommandText =
+                """
+        DELETE FROM IndexedFiles;
+        """;
+
+            command.ExecuteNonQuery();
+        }
+
+        public static void AddIndexedFile(
+            string filePath)
+        {
+            using SqliteConnection connection = OpenConnection();
+
+            using SqliteCommand command = connection.CreateCommand();
+
+            command.CommandText =
+                """
+        INSERT INTO IndexedFiles
+        (
+            FilePath,
+            FileName,
+            FileExtension,
+            DateIndexed
+        )
+        VALUES
+        (
+            $filePath,
+            $fileName,
+            $fileExtension,
+            $dateIndexed
+        );
+        """;
+
+            command.Parameters.AddWithValue(
+                "$filePath",
+                filePath);
+
+            command.Parameters.AddWithValue(
+                "$fileName",
+                Path.GetFileName(filePath));
+
+            command.Parameters.AddWithValue(
+                "$fileExtension",
+                Path.GetExtension(filePath));
+
+            command.Parameters.AddWithValue(
+                "$dateIndexed",
+                DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+
+            command.ExecuteNonQuery();
+        }
     }
 }

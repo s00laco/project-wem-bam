@@ -42,12 +42,11 @@ Never rely on previous conversation history for file contents.
 Never recreate an older version of a file.
 
 Only state that you have reviewed a file if you have actually reviewed its current contents.
-Where .cs files need to be updated, ask me to upload the contents of the current version to the chat since you cannot read those files directly.
-
 
 Modifying Existing Files
 
 Preserve everything unless the requested implementation requires it to change.
+Before modifying an existing file, review its current contents. If you do not have access to the current version of the file for any reason, stop and ask me to provide it before generating changes.
 
 Preserve:
 
@@ -63,10 +62,6 @@ Only modify the minimum amount of code necessary.
 Do not change code outside the approved scope unless it is required for the requested implementation to function correctly.
 
 If fewer files need to change than originally expected, explain why before generating code.
-
-File Generation
-
-Prefer targeted method-level replacements whenever practical.
 
 File Generation
 

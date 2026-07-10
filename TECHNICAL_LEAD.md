@@ -60,7 +60,7 @@ Treat the latest available version of every file as canonical.
 
 Only state that you have reviewed a file if you have actually reviewed its current contents.
 
-Where .cs files need to be updated, ask me to upload the contents of the current version to the chat since you cannot read those files directly.
+If you do not have access to the current version of the file for any reason, stop and ask me to provide it before generating changes.
 
 Do not base architectural decisions on outdated file contents.
 

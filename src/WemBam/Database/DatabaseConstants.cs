@@ -6,6 +6,6 @@ namespace WemBam.Database
 
         public const string DatabaseFileName = "WemBam.db";
 
-        public const int CurrentSchemaVersion = 1;
+        public const int CurrentSchemaVersion = 2;
     }
 }

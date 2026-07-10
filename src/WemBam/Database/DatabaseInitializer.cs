@@ -54,17 +54,17 @@ namespace WemBam.Database
             command.ExecuteNonQuery();
         }
         private static void ApplyFutureMigrations(
-    SqliteConnection connection,
-    int currentVersion)
+            SqliteConnection connection,
+            int currentVersion)
         {
-            // Future schema upgrades will be applied here.
-            // Example:
-            //
-            // if (currentVersion < 2)
-            // {
-            //     UpgradeToVersion2(connection);
-            //     currentVersion = 2;
-            // }
+            if (currentVersion < 2)
+            {
+                DatabaseSchema.UpgradeToVersion2(connection);
+
+                SetSchemaVersion(connection, 2);
+
+                currentVersion = 2;
+            }
         }
     }
 }

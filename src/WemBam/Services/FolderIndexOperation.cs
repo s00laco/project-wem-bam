@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using WemBam.Contracts;
 using WemBam.Models;
+using WemBam.Database;
 
 namespace WemBam.Services
 {
@@ -71,13 +72,16 @@ namespace WemBam.Services
                         TotalItems = totalItems
                     });
 
+                    DatabaseManager.ClearIndexedFiles();
+
                     const int BatchSize = 50;
 
                     for (int i = 0; i < matchingFiles.Count; i++)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        // Placeholder for future indexing work.
+                        DatabaseManager.AddIndexedFile(
+                            matchingFiles[i]);
 
                         processed++;
 
