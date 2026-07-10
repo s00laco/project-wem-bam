@@ -37,7 +37,8 @@ namespace WemBam.Services
             BackgroundOperationResult result =
                 await Task.Run(() =>
                 {
-                    List<string> matchingFiles = new();
+                    HashSet<string> matchingFiles = new(
+                        StringComparer.OrdinalIgnoreCase);
 
                     foreach (Source source in _sources)
                     {
@@ -48,17 +49,21 @@ namespace WemBam.Services
                             continue;
                         }
 
-                        matchingFiles.AddRange(
-                            Directory.EnumerateFiles(
-                                source.Path,
-                                "*.wem",
-                                SearchOption.AllDirectories));
+                        foreach (string filePath in Directory.EnumerateFiles(
+                                     source.Path,
+                                     "*.wem",
+                                     SearchOption.AllDirectories))
+                        {
+                            matchingFiles.Add(filePath);
+                        }
 
-                        matchingFiles.AddRange(
-                            Directory.EnumerateFiles(
-                                source.Path,
-                                "*.ba2",
-                                SearchOption.AllDirectories));
+                        foreach (string filePath in Directory.EnumerateFiles(
+                                     source.Path,
+                                     "*.ba2",
+                                     SearchOption.AllDirectories))
+                        {
+                            matchingFiles.Add(filePath);
+                        }
                     }
 
                     int totalItems = matchingFiles.Count;
@@ -76,12 +81,11 @@ namespace WemBam.Services
 
                     const int BatchSize = 50;
 
-                    for (int i = 0; i < matchingFiles.Count; i++)
+                    foreach (string filePath in matchingFiles)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        DatabaseManager.AddIndexedFile(
-                            matchingFiles[i]);
+                        DatabaseManager.AddIndexedFile(filePath);
 
                         processed++;
 
