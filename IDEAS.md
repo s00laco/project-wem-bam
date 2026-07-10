@@ -475,6 +475,19 @@ Benefits:
 - Reduced disk I/O.
 - Limited data loss if indexing is interrupted compared with a single large transaction.
 
+## Verify index after startup
+
+**Status:** Future
+
+Currently Wem Bam remembers that an index exists and restores the last successful indexing information when the application starts.
+
+Future improvement:
+
+Before reporting the index as "Up to date", check whether the configured sources are still the same as when the index was created.
+
+If the sources have changed (for example, a source was added, removed or modified), automatically mark the index as "Out of date" so the user knows it should be rebuilt.
+
+This should avoid incorrectly reporting an index as current after the source configuration has changed.
 
 ---
 

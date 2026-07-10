@@ -38,6 +38,24 @@ namespace WemBam.Services
             IndexedFileCount = indexedFileCount;
         }
 
+        public void RestoreState(
+    DateTimeOffset? lastIndexed,
+    int indexedFileCount)
+        {
+            if (indexedFileCount == 0)
+            {
+                Status = "Not indexed";
+                LastIndexed = null;
+                IndexedFileCount = 0;
+
+                return;
+            }
+
+            Status = "Up to date";
+            LastIndexed = lastIndexed;
+            IndexedFileCount = indexedFileCount;
+        }
+
         public void SetOutOfDate()
         {
             Status = "Out of date";

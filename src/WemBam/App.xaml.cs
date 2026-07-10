@@ -2,6 +2,7 @@
 using System.Windows;
 using WemBam.Database;
 using WemBam.Logging;
+using WemBam.Services;
 
 namespace WemBam
 {
@@ -16,6 +17,15 @@ namespace WemBam
             try
             {
                 DatabaseManager.Initialize();
+
+                (
+                    DateTimeOffset? lastIndexed,
+                    int indexedFileCount) =
+                        DatabaseManager.LoadIndexStatus();
+
+                IndexStatusManager.Instance.RestoreState(
+                    lastIndexed,
+                    indexedFileCount);
             }
             catch (Exception ex)
             {

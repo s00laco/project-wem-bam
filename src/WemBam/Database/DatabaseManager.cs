@@ -108,5 +108,39 @@ namespace WemBam.Database
 
             command.ExecuteNonQuery();
         }
+        public static (
+    DateTimeOffset? LastIndexed,
+    int IndexedFileCount) LoadIndexStatus()
+        {
+            using SqliteConnection connection = OpenConnection();
+
+            using SqliteCommand command = connection.CreateCommand();
+
+            command.CommandText =
+                """
+        SELECT
+            COUNT(*),
+            MAX(DateIndexed)
+        FROM IndexedFiles;
+        """;
+
+            using SqliteDataReader reader = command.ExecuteReader();
+
+            reader.Read();
+
+            int indexedFileCount = reader.GetInt32(0);
+
+            if (indexedFileCount == 0 ||
+                reader.IsDBNull(1))
+            {
+                return (null, 0);
+            }
+
+            long unixMilliseconds = reader.GetInt64(1);
+
+            return (
+                DateTimeOffset.FromUnixTimeMilliseconds(unixMilliseconds),
+                indexedFileCount);
+        }
     }
 }
