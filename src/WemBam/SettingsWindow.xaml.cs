@@ -493,6 +493,12 @@ namespace WemBam
                 BackgroundTaskManager_TaskCancelled;
 
             base.OnClosed(e);
+
+            if (Owner is Window owner)
+            {
+                owner.Activate();
+                owner.Focus();
+            }
         }
 
         private void OkButton_Click(
