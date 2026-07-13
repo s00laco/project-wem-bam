@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Microsoft.Data.Sqlite;
 using WemBam.Logging;
+using WemBam.Models;
 
 namespace WemBam.Database
 {
@@ -66,7 +67,7 @@ namespace WemBam.Database
         }
 
         public static void AddAudioAsset(
-            string assetPath)
+            AudioAsset audioAsset)
         {
             using SqliteConnection connection = OpenConnection();
 
@@ -98,27 +99,27 @@ namespace WemBam.Database
 
             command.Parameters.AddWithValue(
                 "$sourceId",
-                0);
+                audioAsset.SourceId);
 
             command.Parameters.AddWithValue(
                 "$fileName",
-                Path.GetFileName(assetPath));
+                audioAsset.FileName);
 
             command.Parameters.AddWithValue(
                 "$fileExtension",
-                Path.GetExtension(assetPath));
+                audioAsset.FileExtension);
 
             command.Parameters.AddWithValue(
                 "$containerPath",
-                DBNull.Value);
+                (object?)audioAsset.ContainerPath ?? DBNull.Value);
 
             command.Parameters.AddWithValue(
                 "$assetPath",
-                assetPath);
+                audioAsset.AssetPath);
 
             command.Parameters.AddWithValue(
                 "$duration",
-                DBNull.Value);
+                (object?)audioAsset.Duration ?? DBNull.Value);
 
             command.Parameters.AddWithValue(
                 "$dateIndexed",

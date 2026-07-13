@@ -85,7 +85,17 @@ namespace WemBam.Services
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        DatabaseManager.AddAudioAsset(filePath);
+                        AudioAsset audioAsset = new()
+                        {
+                            SourceId = 0,
+                            FileName = Path.GetFileName(filePath),
+                            FileExtension = Path.GetExtension(filePath),
+                            ContainerPath = null,
+                            AssetPath = filePath,
+                            Duration = null
+                        };
+
+                        DatabaseManager.AddAudioAsset(audioAsset);
 
                         processed++;
 
