@@ -51,7 +51,7 @@ namespace WemBam.Database
 
             return connection;
         }
-        public static void ClearIndexedFiles()
+        public static void ClearAudioAssets()
         {
             using SqliteConnection connection = OpenConnection();
 
@@ -59,14 +59,14 @@ namespace WemBam.Database
 
             command.CommandText =
                 """
-        DELETE FROM IndexedFiles;
+        DELETE FROM AudioAssets;
         """;
 
             command.ExecuteNonQuery();
         }
 
-        public static void AddIndexedFile(
-            string filePath)
+        public static void AddAudioAsset(
+            string assetPath)
         {
             using SqliteConnection connection = OpenConnection();
 
@@ -74,33 +74,51 @@ namespace WemBam.Database
 
             command.CommandText =
                 """
-        INSERT INTO IndexedFiles
+        INSERT INTO AudioAssets
         (
-            FilePath,
+            SourceId,
             FileName,
             FileExtension,
+            ContainerPath,
+            AssetPath,
+            Duration,
             DateIndexed
         )
         VALUES
         (
-            $filePath,
+            $sourceId,
             $fileName,
             $fileExtension,
+            $containerPath,
+            $assetPath,
+            $duration,
             $dateIndexed
         );
         """;
 
             command.Parameters.AddWithValue(
-                "$filePath",
-                filePath);
+                "$sourceId",
+                0);
 
             command.Parameters.AddWithValue(
                 "$fileName",
-                Path.GetFileName(filePath));
+                Path.GetFileName(assetPath));
 
             command.Parameters.AddWithValue(
                 "$fileExtension",
-                Path.GetExtension(filePath));
+                Path.GetExtension(assetPath));
+
+            command.Parameters.AddWithValue(
+                "$containerPath",
+                DBNull.Value);
+
+            command.Parameters.AddWithValue(
+                "$assetPath",
+                assetPath);
+
+            command.Parameters.AddWithValue(
+                "$duration",
+                DBNull.Value);
 
             command.Parameters.AddWithValue(
                 "$dateIndexed",
@@ -108,6 +126,7 @@ namespace WemBam.Database
 
             command.ExecuteNonQuery();
         }
+
         public static (
     DateTimeOffset? LastIndexed,
     int IndexedFileCount) LoadIndexStatus()
@@ -121,7 +140,7 @@ namespace WemBam.Database
         SELECT
             COUNT(*),
             MAX(DateIndexed)
-        FROM IndexedFiles;
+        FROM AudioAssets;
         """;
 
             using SqliteDataReader reader = command.ExecuteReader();

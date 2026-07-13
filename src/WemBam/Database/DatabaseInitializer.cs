@@ -65,6 +65,15 @@ namespace WemBam.Database
 
                 currentVersion = 2;
             }
+
+            if (currentVersion < 3)
+            {
+                DatabaseSchema.UpgradeToVersion3(connection);
+
+                SetSchemaVersion(connection, 3);
+
+                currentVersion = 3;
+            }
         }
     }
 }

@@ -77,7 +77,7 @@ namespace WemBam.Services
                         TotalItems = totalItems
                     });
 
-                    DatabaseManager.ClearIndexedFiles();
+                    DatabaseManager.ClearAudioAssets();
 
                     const int BatchSize = 50;
 
@@ -85,7 +85,7 @@ namespace WemBam.Services
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        DatabaseManager.AddIndexedFile(filePath);
+                        DatabaseManager.AddAudioAsset(filePath);
 
                         processed++;
 
