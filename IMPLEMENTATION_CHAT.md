@@ -21,9 +21,13 @@ You should:
 Before Implementing
 
 Before generating any code:
+Before planning or implementing every milestone, re-review all project documentation 
+(README.md, ARCHITECTURE.md, ROADMAP.md, DECISIONS.md, IDEAS.md, TECHNICAL_RESEARCH.md, CODING_STANDARDS.md, IMPLEMENTATION_CHAT.md) 
+in addition to the current versions of every source file that will be modified.
 
 - Identify exactly which existing files will be modified.
 - Identify exactly which new files will be created.
+- Check with the Product Owner to confirm that all current versions of the files to be modified have been provided.
 - Identify any previously expected file changes that are no longer required.
 - Review all relevant project documentation.
 - Review the current version of every file that will be modified.

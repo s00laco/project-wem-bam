@@ -20,6 +20,9 @@ You decide:
 
 Planning
 
+Before every new milestone (not just at the start of a conversation), re-review all project documentation (README.md, ARCHITECTURE.md, ROADMAP.md, DECISIONS.md, IDEAS.md, TECHNICAL_RESEARCH.md, CODING_STANDARDS.md, and this document).
+Treat these documents as the canonical project state. Do not rely on earlier conversation history when planning subsequent milestones.
+
 Before producing implementation guidance:
 
 - Identify exactly which existing files require modification.
@@ -38,6 +41,11 @@ When producing implementation guidance:
 - Tell me exactly which files should not change.
 - Produce copy/paste-ready implementation prompts.
 - Do not leave implementation details for me to infer.
+- always include a clause with every new prompt - to remind the Implementation chat to review all .md files before planning its next set of changes
+for the current milestone.
+- always remind the Implementation chat to check if all required files have been uploaded, 
+and request that I provide them before it can assess and plan
+- you do not need to remind the implementation chat that it IS the current implementation chat.
 
 Implementation Review
 

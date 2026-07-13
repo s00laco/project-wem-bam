@@ -55,15 +55,7 @@ namespace WemBam.Services
                                      SearchOption.AllDirectories))
                         {
                             matchingFiles.Add(filePath);
-                        }
-
-                        foreach (string filePath in Directory.EnumerateFiles(
-                                     source.Path,
-                                     "*.ba2",
-                                     SearchOption.AllDirectories))
-                        {
-                            matchingFiles.Add(filePath);
-                        }
+                        }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
                     }
 
                     int totalItems = matchingFiles.Count;

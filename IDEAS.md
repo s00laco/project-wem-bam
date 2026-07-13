@@ -432,23 +432,29 @@ The log viewer should be read-only and should not allow editing of log files.
 
 # Indexing
 
-## Optimise duplicate file discovery
+## Optimise Duplicate File Discovery
+
+**Status:** Implemented (2026-07)
+
+### Original Idea
 
 Currently duplicate file paths may be discovered when sources overlap (for example, indexing both a parent folder and one of its subfolders).
 
 Future improvement:
 
 - Detect duplicate file paths during discovery rather than relying on the database to reject them.
-- Maintain the UNIQUE constraint on IndexedFiles.FilePath as a safety net.
-- Consider using a HashSet<string> during indexing so each unique file is processed only once.
+- Maintain the UNIQUE constraint on the database as a safety net.
+- Consider using a `HashSet<string>` during indexing so each unique file is processed only once.
 
-Benefits:
+### Outcome
 
-- Faster indexing.
-- Avoid unnecessary SQLite work.
-- Prevent duplicate-related exceptions.
+Implemented.
 
-## Detect overlapping source folders
+Folder indexing now deduplicates discovered file paths using a `HashSet<string>` before persistence. The database UNIQUE constraint remains as a defensive safety net.
+
+The original motivation has therefore been addressed.
+
+## Warn about overlapping folder sources
 
 Warn when one configured source is already contained within another configured source.
 
@@ -488,6 +494,20 @@ Before reporting the index as "Up to date", check whether the configured sources
 If the sources have changed (for example, a source was added, removed or modified), automatically mark the index as "Out of date" so the user knows it should be rebuilt.
 
 This should avoid incorrectly reporting an index as current after the source configuration has changed.
+
+## Source Guidance
+
+**Status:** Future
+
+Help users understand how different source types are indexed.
+
+Possible ideas:
+
+- Display a tooltip or help text explaining that folder sources index only loose audio files.
+- Explain that BA2 archives must be added explicitly using **Add File...** to have their contents indexed.
+- Consider adding the same explanation to the future Help documentation.
+
+The goal is to make indexing behaviour predictable and reduce confusion for new users.
 
 ---
 

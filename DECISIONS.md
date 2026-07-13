@@ -296,3 +296,27 @@ Loose WEM files and BA2-contained WEM files represent the same logical concept: 
 Representing discovered assets using a common model keeps the indexing engine independent of storage format and avoids introducing archive-specific logic into the persistence layer.
 
 This allows new source types to be added while preserving a consistent indexing pipeline.
+
+---
+
+## 2026-07-13
+
+### Explicit Archive Indexing
+
+**Decision**
+
+Folder sources index only loose audio files.
+
+Archive contents are indexed only when the archive itself is explicitly added as a source.
+
+Initially this applies to BA2 archives.
+
+**Reason**
+
+Users explicitly control which content is indexed.
+
+Automatically indexing every archive discovered within a folder could result in unexpectedly scanning hundreds of unrelated archives, significantly increasing indexing time and producing unwanted results.
+
+Treating archives as explicit sources keeps indexing predictable, aligns with the application's user-controlled source philosophy, and cleanly separates loose file indexing from archive indexing.
+
+This also allows dedicated archive indexing operations to evolve independently while continuing to produce the same canonical `AudioAsset` model.
