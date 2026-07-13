@@ -276,3 +276,23 @@ Fatal errors terminate the operation cleanly.
 **Reason**
 
 This provides predictable behaviour for users and establishes a consistent lifecycle for every long-running operation in the application.
+
+---
+
+## 2026-07-13
+
+### Canonical Indexed Audio Asset
+
+Decision
+
+The indexing engine produces a canonical discovered audio asset model before persistence.
+
+DatabaseManager persists audio assets rather than interpreting filesystem paths directly.
+
+Reason
+
+Loose WEM files and BA2-contained WEM files represent the same logical concept: a playable audio asset.
+
+Representing discovered assets using a common model keeps the indexing engine independent of storage format and avoids introducing archive-specific logic into the persistence layer.
+
+This allows new source types to be added while preserving a consistent indexing pipeline.
