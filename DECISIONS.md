@@ -320,3 +320,63 @@ Automatically indexing every archive discovered within a folder could result in 
 Treating archives as explicit sources keeps indexing predictable, aligns with the application's user-controlled source philosophy, and cleanly separates loose file indexing from archive indexing.
 
 This also allows dedicated archive indexing operations to evolve independently while continuing to produce the same canonical `AudioAsset` model.
+
+---
+
+---
+
+## 2026-07-14
+
+### Single Indexing Session
+
+**Decision**
+
+A user-initiated indexing operation represents a single logical indexing session.
+
+A dedicated `IndexSourcesOperation` coordinates the indexing session.
+
+Individual discovery operations execute within that session.
+
+Current discovery operations include:
+
+- folder discovery
+- BA2 archive discovery
+
+**Reason**
+
+Users initiate indexing as a single action and should experience a single background operation with:
+
+- one progress lifecycle
+- one cancellation token
+- one elapsed timer
+- one completion event
+
+This preserves the existing user experience while allowing additional discovery mechanisms to be introduced without changing how indexing is initiated or managed.
+
+---
+
+## 2026-07-14
+
+### Separation of Session Orchestration and Asset Discovery
+
+**Decision**
+
+Session-level responsibilities belong to `IndexSourcesOperation`.
+
+These responsibilities include:
+
+- clearing previously indexed assets
+- coordinating discovery operations
+- aggregating progress
+- producing the final indexing result
+
+Individual discovery operations are responsible only for discovering audio assets from their respective source types and 
+passing canonical `AudioAsset` instances into the common indexing pipeline for persistence.
+
+**Reason**
+
+Separating session orchestration from asset discovery keeps each class focused on a single responsibility.
+
+This allows new discovery mechanisms (for example BA2, BNK or future archive formats) to be added without changing the overall indexing workflow.
+
+It also preserves the canonical indexing pipeline whereby every discovery mechanism produces the same `AudioAsset` model before persistence.

@@ -111,7 +111,7 @@ namespace WemBam
 
             Logger.Information("Index started.");
 
-            FolderIndexOperation operation = new(
+            IndexSourcesOperation operation = new(
                 _sourceManager.Sources);
 
             await _backgroundTaskManager.StartAsync(operation);

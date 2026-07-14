@@ -10,11 +10,11 @@ using WemBam.Database;
 
 namespace WemBam.Services
 {
-    public class FolderIndexOperation : IBackgroundOperation
+    public class FolderDiscoveryOperation : IBackgroundOperation
     {
         private readonly IReadOnlyCollection<Source> _sources;
 
-        public FolderIndexOperation(
+        public FolderDiscoveryOperation(
             IEnumerable<Source> sources)
         {
             _sources = sources
@@ -31,7 +31,7 @@ namespace WemBam.Services
             progress.Report(new BackgroundTaskProgress
             {
                 StartedAt = startedAt,
-                StatusMessage = "Scanning folders..."
+                StatusMessage = "Scanning folder sources..."
             });
 
             BackgroundOperationResult result =
@@ -64,12 +64,10 @@ namespace WemBam.Services
                     progress.Report(new BackgroundTaskProgress
                     {
                         StartedAt = startedAt,
-                        StatusMessage = "Processing files...",
+                        StatusMessage = "Indexing audio assets...",
                         ItemsProcessed = 0,
                         TotalItems = totalItems
                     });
-
-                    DatabaseManager.ClearAudioAssets();
 
                     const int BatchSize = 50;
 
@@ -97,7 +95,7 @@ namespace WemBam.Services
                             progress.Report(new BackgroundTaskProgress
                             {
                                 StartedAt = startedAt,
-                                StatusMessage = "Processing files...",
+                                StatusMessage = "Indexing audio assets...",
                                 ItemsProcessed = processed,
                                 TotalItems = totalItems
                             });
@@ -105,8 +103,7 @@ namespace WemBam.Services
                     }
 
                     return BackgroundOperationResult.Completed(
-                        processed,
-                        "Index completed.");
+                        processed);
                 },
                 cancellationToken);
 
