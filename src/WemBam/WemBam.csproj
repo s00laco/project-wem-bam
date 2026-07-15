@@ -10,6 +10,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
+		<PackageReference Include="Mutagen.Bethesda" Version="0.53.1" />
 	</ItemGroup>
 
 </Project>

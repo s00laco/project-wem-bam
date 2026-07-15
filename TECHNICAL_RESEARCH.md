@@ -85,3 +85,25 @@ BA2 Archive
 -> Audio Output
 
 No project decision has been made at this stage. The investigation provides evidence that will inform future architecture and implementation decisions.
+
+---
+
+# Mutagen Runtime Compatibility
+
+## Objective
+
+Determine the appropriate Mutagen.Bethesda version for integration into Wem Bam.
+
+## Findings
+
+Investigation determined:
+
+- Mutagen.Bethesda 0.53.1 targets .NET 8.
+- Mutagen.Bethesda 0.54.x and later target .NET 9.
+- The BA2 archive APIs validated during the standalone feasibility investigation are available in 0.53.1.
+
+## Conclusion
+
+Wem Bam will integrate Mutagen.Bethesda 0.53.1 while the project targets .NET 8.
+
+A future migration to a newer Mutagen release can be considered alongside a planned upgrade to the next LTS .NET release.
