@@ -2,7 +2,7 @@ namespace WemBam.Models
 {
     public class AudioAsset
     {
-        public int SourceId { get; set; }
+        public long SourceId { get; set; }
 
         public string FileName { get; set; } = string.Empty;
 

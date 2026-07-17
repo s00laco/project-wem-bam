@@ -37,7 +37,7 @@ namespace WemBam.Services
             BackgroundOperationResult result =
                 await Task.Run(() =>
                 {
-                    HashSet<string> matchingFiles = new(
+                    Dictionary<string, Source> discoveredFiles = new(
                         StringComparer.OrdinalIgnoreCase);
 
                     foreach (Source source in _sources)
@@ -54,11 +54,11 @@ namespace WemBam.Services
                                      "*.wem",
                                      SearchOption.AllDirectories))
                         {
-                            matchingFiles.Add(filePath);
-                        }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+                            discoveredFiles.TryAdd(filePath, source);
+                        }
                     }
 
-                    int totalItems = matchingFiles.Count;
+                    int totalItems = discoveredFiles.Count;
                     int processed = 0;
 
                     progress.Report(new BackgroundTaskProgress
@@ -71,13 +71,13 @@ namespace WemBam.Services
 
                     const int BatchSize = 50;
 
-                    foreach (string filePath in matchingFiles)
+                    foreach ((string filePath, Source source) in discoveredFiles)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
                         AudioAsset audioAsset = new()
                         {
-                            SourceId = 0,
+                            SourceId = source.Id,
                             FileName = Path.GetFileName(filePath),
                             FileExtension = Path.GetExtension(filePath),
                             ContainerPath = null,

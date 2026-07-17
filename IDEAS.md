@@ -175,6 +175,39 @@ Potential benefits:
 
 ---
 
+## Audio Thumbnails in Search Results
+
+**Status:** Future
+
+Display a compact visual summary of each audio asset directly within the main search results list.
+
+Rather than requiring users to play multiple files to identify the one they want, a small audio thumbnail would provide an at-a-glance indication of the overall shape and energy of the audio.
+
+Examples include:
+
+- Short transient sounds (footsteps, gunshots, explosions)
+- Continuous ambience
+- Dialogue with pauses
+- Music with repeating patterns
+
+The thumbnail does not need to be a full-resolution waveform. A simplified representation that captures the overall character of the audio would provide the greatest benefit while remaining fast to render.
+
+Potential implementation:
+
+- Generate the audio thumbnail during indexing alongside other derived metadata (such as duration).
+- Store the thumbnail representation in the database.
+- Display the thumbnail in the main asset list.
+- Reuse the same underlying data for larger waveform displays elsewhere in the application.
+
+Benefits:
+
+- Faster visual identification of audio assets.
+- Fewer files need to be previewed before finding the desired sound.
+- Makes large audio libraries easier to browse.
+- Complements the planned detailed waveform display in the playback panel.
+
+---
+
 # Search
 
 ## Predictive Search
