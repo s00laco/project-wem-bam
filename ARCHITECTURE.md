@@ -178,6 +178,30 @@ Indexed data may be regenerated at any time.
 
 ---
 
+## Canonical Audio Location
+
+Every indexed `AudioAsset` describes the location of a discovered audio asset using the following properties:
+
+| Property        | Meaning                                                           |
+|-----------------|-------------------------------------------------------------------|
+| `ContainerPath` | The physical container that holds the audio asset, if applicable. |
+| `AssetPath`     | The location of the audio asset itself.                           |
+
+The interpretation depends on how the asset is stored.
+
+| Source Type | ContainerPath                 | AssetPath                                    |
+|-------------|-------------------------------|----------------------------------------------|
+| Loose WEM   | `null`                        | Full path to the WEM file.                   |
+| BA2 Archive | Full path to the BA2 archive. | Internal path of the WEM within the archive. |
+
+Loose WEM files do not have a container because the file itself is the asset.
+
+Archive-based assets require both the archive location (`ContainerPath`) and the asset's location within that archive (`AssetPath`).
+
+This representation allows every indexed audio asset to be described using the same model while accurately reflecting its underlying storage.
+
+---
+
 ## User Data
 
 Created by the user.

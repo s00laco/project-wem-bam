@@ -299,6 +299,34 @@ This allows new source types to be added while preserving a consistent indexing 
 
 ---
 
+## 2026-07-18
+(added days later after the original decision was made to correct a gap here in the decision record)
+### Canonical Audio Location Model
+
+**Decision**
+
+Every indexed `AudioAsset` represents the location of a discovered audio asset using `ContainerPath` and `AssetPath`.
+
+For loose WEM files:
+
+- `ContainerPath` is `null`.
+- `AssetPath` stores the full path to the WEM file.
+
+For archive-based assets:
+
+- `ContainerPath` stores the path to the archive.
+- `AssetPath` stores the asset's path within that archive.
+
+**Reason**
+
+Loose files and archived files are physically stored differently.
+
+Rather than forcing both storage mechanisms into an identical representation, the canonical model reflects each storage type naturally while providing a consistent interface for the rest of the application.
+
+This allows playback, indexing and future archive formats to operate on a common `AudioAsset` model without requiring artificial or redundant path representations.
+
+---
+
 ## 2026-07-13
 
 ### Explicit Archive Indexing
