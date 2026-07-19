@@ -107,3 +107,51 @@ Investigation determined:
 Wem Bam will integrate Mutagen.Bethesda 0.53.1 while the project targets .NET 8.
 
 A future migration to a newer Mutagen release can be considered alongside a planned upgrade to the next LTS .NET release.
+
+---
+
+# Mutagen Stream Lifetime Investigation
+
+## Objective
+
+Determine whether a stream returned by `IArchiveFile.AsStream()` remains usable after the originating `Ba2Reader` is no longer referenced by application code.
+
+## Investigation
+
+A sandbox experiment performed the following sequence:
+
+1. Opened a BA2 archive.
+2. Located a known WEM entry.
+3. Obtained a stream using `IArchiveFile.AsStream()`.
+4. Verified the stream supported:
+   - `Length`
+   - reading
+   - seeking
+5. Allowed the `Ba2Reader` to go out of scope.
+6. Requested a full garbage collection.
+7. Repeated the same stream operations.
+
+## Findings
+
+The stream continued to function correctly after the `Ba2Reader` had gone out of scope and a full garbage collection had been requested.
+
+The following operations all continued to succeed without exception:
+
+- querying `Length`
+- seeking
+- reading
+
+### Additional API Findings
+
+During integration into Wem Bam it was confirmed that:
+
+- `Archive.CreateReader(...)` returns `IArchiveReader`.
+- `IArchiveReader` does not implement `IDisposable`.
+
+Consequently, the archive reader cannot be explicitly disposed by application code.
+
+## Conclusion
+
+Although this experiment cannot conclusively prove that the `Ba2Reader` had been reclaimed by the runtime, it provides strong evidence that callers do not need to retain a reference to the originating `Ba2Reader` in order for the stream returned by `IArchiveFile.AsStream()` to remain usable.
+
+This investigation found no evidence that the usability of the returned stream depends on application code retaining a reference to the originating `Ba2Reader`.

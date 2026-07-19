@@ -408,3 +408,23 @@ Separating session orchestration from asset discovery keeps each class focused o
 This allows new discovery mechanisms (for example BA2, BNK or future archive formats) to be added without changing the overall indexing workflow.
 
 It also preserves the canonical indexing pipeline whereby every discovery mechanism produces the same `AudioAsset` model before persistence.
+
+---
+
+## 2026-07-18
+
+### Stream-Based Audio Access
+
+**Decision**
+
+Audio playback and future audio processing obtain audio data through `IAudioStreamProvider` rather than accessing storage directly.
+
+Audio stream providers are responsible only for exposing a readable `Stream` for a requested audio asset.
+
+Different storage mechanisms (such as loose WEM files or BA2 archives) provide independent implementations of the same interface.
+
+**Reason**
+
+Separating audio access from playback allows the remainder of the application to operate on streams rather than physical storage.
+
+This keeps playback independent of filesystem and archive formats, preserves single responsibility, and allows additional storage mechanisms to be introduced without changing playback code.
