@@ -132,13 +132,27 @@ Search behaviour should be configurable without changing application code.
 
 ## Audio Playback
 
-Responsible only for:
+Responsible for:
 
-- loading audio
-- playback
+- coordinating playback
+- decoding audio
+- audio output
 - seeking
 - volume
 - playback state
+
+Playback is divided into small, focused components.
+
+Responsibilities are separated as follows:
+
+| Component | Responsibility |
+|-----------|----------------|
+| PlaybackService | Coordinates playback. |
+| VgmStreamDecoder | Owns interaction with libvgmstream and decodes compressed audio |
+| ManagedStreamFileAdapter | Adapts managed System.IO.Stream instances into the libstreamfile_t interface required by libvgmstream. |
+| NAudioPlayer | Renders decoded PCM audio to the operating system. |
+
+The playback subsystem consumes audio through `IAudioStreamProvider` and therefore remains independent of whether audio originates from loose files, BA2 archives or future storage mechanisms.
 
 ---
 

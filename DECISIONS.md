@@ -428,3 +428,90 @@ Different storage mechanisms (such as loose WEM files or BA2 archives) provide i
 Separating audio access from playback allows the remainder of the application to operate on streams rather than physical storage.
 
 This keeps playback independent of filesystem and archive formats, preserves single responsibility, and allows additional storage mechanisms to be introduced without changing playback code.
+
+---
+
+## 2026-07-20
+
+### Playback Architecture
+
+**Decision**
+
+Embedded audio playback is implemented as a dedicated playback subsystem composed of small, single-purpose components.
+
+The playback subsystem consists of:
+
+- `PlaybackService`
+- `VgmStreamDecoder`
+- `ManagedStreamFileAdapter`
+- `NAudioPlayer`
+
+`PlaybackService` coordinates playback but does not perform audio decoding or audio output directly.
+
+`VgmStreamDecoder` owns interaction with libvgmstream.
+
+`ManagedStreamFileAdapter` adapts a managed `System.IO.Stream` to the callback interface required by libvgmstream.
+
+`NAudioPlayer` is responsible only for rendering decoded PCM audio to the operating system audio device.
+
+**Reason**
+
+This preserves the project's single responsibility principle by separating playback orchestration, native decoder integration, stream adaptation and audio output into independent components.
+
+It also allows the playback pipeline to remain independent of how audio assets are physically stored while keeping native interoperability isolated from the remainder of the application.
+
+---
+
+---
+
+## 2026-07-20
+
+### Frozen libvgmstream Dependency
+
+**Decision**
+
+Wem Bam targets **libvgmstream r2117**.
+
+The project's native interoperability layer is implemented against libvgmstream's **public API**.
+
+The canonical public headers are:
+
+- `libvgmstream.h`
+- `libvgmstream_streamfile.h`
+
+These headers are stored within the repository under:
+
+`ThirdParty/libvgmstream/r2117/`
+
+The internal headers (`vgmstream.h` and `streamfile.h`) are retained for reference only and are not considered part of Wem Bam's native interoperability contract.
+
+Future upgrades to libvgmstream will be treated as explicit dependency upgrade milestones rather than automatically tracking newer upstream releases.
+
+**Reason**
+
+Generating the managed interoperability layer against the library's supported public API minimises coupling to implementation details, reduces future maintenance effort, and provides a stable interoperability boundary.
+
+---
+
+## 2026-07-30
+
+### Native Interoperability Strategy
+
+**Decision**
+
+Wem Bam's native interoperability layer is implemented as a direct ABI translation of libvgmstream's public API.
+
+The interop layer is composed of:
+
+- `NativeEnums`
+- `NativeStructs`
+- `NativeDelegates`
+- `NativeMethods`
+
+These types exist solely to mirror the native API and must not contain wrapper logic, resource ownership, string conversion or other managed convenience functionality.
+
+Higher-level behaviour belongs in managed wrapper classes such as `LibVgmStream` and `ManagedStreamFileAdapter`.
+
+**Reason**
+
+Maintaining a thin ABI layer keeps native interoperability isolated, simplifies future library upgrades, and provides a stable foundation for the managed playback subsystem.

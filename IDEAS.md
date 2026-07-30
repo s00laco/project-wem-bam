@@ -398,14 +398,6 @@ This information should always remain user-editable.
 
 # Integration
 
-## Foobar2000
-
-**Status:** Planned
-
-Continue using Foobar2000 for playback rather than embedding an audio player.
-
----
-
 ## Wwise
 
 **Status:** Investigation
@@ -465,28 +457,6 @@ The log viewer should be read-only and should not allow editing of log files.
 
 # Indexing
 
-## Optimise Duplicate File Discovery
-
-**Status:** Implemented (2026-07)
-
-### Original Idea
-
-Currently duplicate file paths may be discovered when sources overlap (for example, indexing both a parent folder and one of its subfolders).
-
-Future improvement:
-
-- Detect duplicate file paths during discovery rather than relying on the database to reject them.
-- Maintain the UNIQUE constraint on the database as a safety net.
-- Consider using a `HashSet<string>` during indexing so each unique file is processed only once.
-
-### Outcome
-
-Implemented.
-
-Folder indexing now deduplicates discovered file paths using a `HashSet<string>` before persistence. The database UNIQUE constraint remains as a defensive safety net.
-
-The original motivation has therefore been addressed.
-
 ## Warn about overlapping folder sources
 
 Warn when one configured source is already contained within another configured source.
@@ -518,13 +488,16 @@ Benefits:
 
 **Status:** Future
 
-Currently Wem Bam remembers that an index exists and restores the last successful indexing information when the application starts.
+Currently Wem Bam remembers that an index exists and restores the last successful indexing information when the application 
+starts.
 
 Future improvement:
 
-Before reporting the index as "Up to date", check whether the configured sources are still the same as when the index was created.
+Before reporting the index as "Up to date", check whether the configured sources are still the same as when the index was 
+created.
 
-If the sources have changed (for example, a source was added, removed or modified), automatically mark the index as "Out of date" so the user knows it should be rebuilt.
+If the sources have changed (for example, a source was added, removed or modified), automatically mark the index as 
+"Out of date" so the user knows it should be rebuilt.
 
 This should avoid incorrectly reporting an index as current after the source configuration has changed.
 
@@ -553,3 +526,55 @@ Ideas worth remembering but intentionally outside the current roadmap.
 - Custom keyboard shortcut configuration
 - Search history
 - Favourite searches
+
+---
+
+# Completed
+
+Items that were previously recorded as ideas but have since reached a conclusion.
+The purpose of this section is to preserve project history without leaving obsolete ideas in the active sections above.
+
+---
+
+## Optimise Duplicate File Discovery
+
+**Status:** Implemented (2026-07)
+
+### Original Idea
+
+Currently duplicate file paths may be discovered when sources overlap (for example, indexing both a parent folder and 
+one of its subfolders).
+
+Future improvement:
+
+- Detect duplicate file paths during discovery rather than relying on the database to reject them.
+- Maintain the UNIQUE constraint on the database as a safety net.
+- Consider using a `HashSet<string>` during indexing so each unique file is processed only once.
+
+### Outcome
+
+Implemented.
+
+Folder indexing now deduplicates discovered file paths using a `HashSet<string>` before persistence. The database UNIQUE 
+constraint remains as a defensive safety net.
+
+The original motivation has therefore been addressed.
+
+---
+
+## Foobar2000 Playback
+
+**Status:** Superseded (2026-07)
+
+Original Idea
+
+Launch playback using Foobar2000.
+
+Outcome
+
+The project later adopted an embedded playback architecture based on direct audio streaming and vgmstream.
+
+Reason
+
+The stream-provider architecture allows playback to remain independent of physical storage (loose WEM vs BA2) 
+while avoiding reliance on an external application.

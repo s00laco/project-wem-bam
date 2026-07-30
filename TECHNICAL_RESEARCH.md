@@ -155,3 +155,75 @@ Consequently, the archive reader cannot be explicitly disposed by application co
 Although this experiment cannot conclusively prove that the `Ba2Reader` had been reclaimed by the runtime, it provides strong evidence that callers do not need to retain a reference to the originating `Ba2Reader` in order for the stream returned by `IArchiveFile.AsStream()` to remain usable.
 
 This investigation found no evidence that the usability of the returned stream depends on application code retaining a reference to the originating `Ba2Reader`.
+
+---
+
+# libvgmstream Integration Investigation
+
+## Objective
+
+Determine the recommended approach for integrating libvgmstream into a .NET 8 WPF application.
+
+## Findings
+
+Investigation determined:
+
+- No actively maintained official .NET wrapper for libvgmstream was identified.
+- P/Invoke is the recommended interoperability mechanism.
+- libvgmstream functions solely as an audio decoder.
+- Decoded output is PCM audio.
+- A custom `libstreamfile_t` implementation remains the appropriate mechanism for presenting a managed `System.IO.Stream` to libvgmstream.
+- A separate playback component is required to render decoded PCM audio.
+- NAudio is an appropriate playback library for this purpose.
+- The required native interop surface is expected to remain small, focusing primarily on decoder lifetime, metadata queries, PCM decoding and cleanup.
+
+## Conclusion
+
+The investigation found no remaining architectural barriers to embedded playback.
+
+The recommended playback pipeline is:
+
+System.IO.Stream
+→ ManagedStreamFileAdapter
+→ libvgmstream
+→ PCM
+→ NAudio
+→ Windows audio device
+
+---
+
+# libvgmstream Public API Investigation
+
+## Objective
+
+Determine the public native API exposed by libvgmstream r2117 and how it relates to the existing internal headers.
+
+## Findings
+
+Investigation of the r2117 source release confirmed that libvgmstream exposes a dedicated public API.
+
+The public API is defined by:
+
+- `libvgmstream.h`
+- `libvgmstream_streamfile.h`
+
+The public API exposes functions for:
+
+- library initialisation and shutdown
+- stream opening and closing
+- playback configuration
+- PCM rendering
+- seeking
+- metadata queries
+
+The public stream interface is represented by `libstreamfile_t`, which defines callbacks for:
+
+- read
+- get_size
+- get_name
+- open
+- close
+
+The internal header `vgmstream.h` includes documentation indicating that consumers should migrate to the public API defined by `libvgmstream.h`.
+
+The internal headers (`vgmstream.h` and `streamfile.h`) remain part of the source distribution and describe the decoder's internal implementation.
