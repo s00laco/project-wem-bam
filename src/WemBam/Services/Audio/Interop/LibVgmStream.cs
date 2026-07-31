@@ -47,6 +47,38 @@ namespace WemBam.Services.Audio.Interop
             }
         }
 
+        internal int Decode(
+            Span<short> destination)
+        {
+            ThrowIfDisposed();
+
+            libvgmstream_t* lib =
+                (libvgmstream_t*)_handle;
+
+            fixed (short* buffer = destination)
+            {
+                int result =
+                    NativeMethods.libvgmstream_fill(
+                        lib,
+                        buffer,
+                        destination.Length);
+
+                if (result < 0)
+                {
+                    throw new InvalidOperationException(
+                        "libvgmstream failed to decode audio.");
+                }
+            }
+
+            if (lib->decoder is null)
+            {
+                throw new InvalidOperationException(
+                    "libvgmstream did not provide decoder state.");
+            }
+
+            return lib->decoder->buf_samples;
+        }
+
         public void Dispose()
         {
             if (_disposed)
@@ -58,6 +90,7 @@ namespace WemBam.Services.Audio.Interop
             {
                 NativeMethods.libvgmstream_free(
                     (libvgmstream_t*)_handle);
+
                 _handle = IntPtr.Zero;
             }
 
