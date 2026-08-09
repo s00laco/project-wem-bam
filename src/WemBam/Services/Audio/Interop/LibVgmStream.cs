@@ -23,10 +23,15 @@ namespace WemBam.Services.Audio.Interop
                 stream,
                 fileName);
 
+            libvgmstream_config_t config = new()
+            {
+                force_sfmt = libvgmstream_sfmt_t.LIBVGMSTREAM_SFMT_PCM16,
+            };
+
             _handle = (IntPtr)NativeMethods.libvgmstream_create(
                 _streamFileAdapter.StreamFile,
                 0,
-                null);
+                &config);
 
             if (_handle == IntPtr.Zero)
             {
@@ -47,6 +52,44 @@ namespace WemBam.Services.Audio.Interop
             }
         }
 
+        internal int SampleRate
+        {
+            get
+            {
+                ThrowIfDisposed();
+
+                libvgmstream_t* lib =
+                    (libvgmstream_t*)_handle;
+
+                if (lib->format is null)
+                {
+                    throw new InvalidOperationException(
+                        "libvgmstream did not provide format information.");
+                }
+
+                return lib->format->sample_rate;
+            }
+        }
+
+        internal int Channels
+        {
+            get
+            {
+                ThrowIfDisposed();
+
+                libvgmstream_t* lib =
+                    (libvgmstream_t*)_handle;
+
+                if (lib->format is null)
+                {
+                    throw new InvalidOperationException(
+                        "libvgmstream did not provide format information.");
+                }
+
+                return lib->format->channels;
+            }
+        }
+
         internal int Decode(
             Span<short> destination)
         {
@@ -61,7 +104,7 @@ namespace WemBam.Services.Audio.Interop
                     NativeMethods.libvgmstream_fill(
                         lib,
                         buffer,
-                        destination.Length);
+                        destination.Length / Channels);
 
                 if (result < 0)
                 {
@@ -76,7 +119,10 @@ namespace WemBam.Services.Audio.Interop
                     "libvgmstream did not provide decoder state.");
             }
 
-            return lib->decoder->buf_samples;
+            int decodedBytes =
+               lib->decoder->buf_bytes;
+
+            return decodedBytes / sizeof(short);
         }
 
         public void Dispose()

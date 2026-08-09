@@ -7,6 +7,9 @@ using Microsoft.Win32;
 using WemBam.Logging;
 using WemBam.Models;
 using WemBam.Services;
+using WemBam.Services.Audio.Interop;
+using WemBam.Services.Audio.Playback;
+using NAudio.Wave;
 
 namespace WemBam
 {
@@ -498,6 +501,88 @@ namespace WemBam
             {
                 owner.Activate();
                 owner.Focus();
+            }
+        }
+
+        private void BrowseWemButton_Click(
+    object sender,
+    RoutedEventArgs e)
+        {
+            try
+            {
+                OpenFileDialog dialog = new()
+                {
+                    Title = "Select WEM File",
+                    Filter = "Wwise Audio (*.wem)|*.wem",
+                    Multiselect = false
+                };
+
+                if (dialog.ShowDialog() != true)
+                {
+                    return;
+                }
+
+                SelectedWemFileTextBox.Text = dialog.FileName;
+
+                PlayWemButton.IsEnabled = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(
+                    ex,
+                    "Failed to select playback test file.");
+
+                MessageBox.Show(
+                    "Wem Bam was unable to open the selected WEM file.",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private void PlayWemButton_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            try
+            {
+                using FileStream stream =
+                    File.OpenRead(
+                        SelectedWemFileTextBox.Text);
+
+                using LibVgmStream decoder =
+                    new(
+                        stream,
+                        Path.GetFileName(
+                            SelectedWemFileTextBox.Text));
+
+                VgmStreamWaveProvider provider =
+                    new(decoder);
+
+                using WaveOutEvent output =
+                    new();
+
+                output.Init(provider);
+
+                output.Play();
+
+                MessageBox.Show(
+                    "Playback started.\n\nClick OK to stop playback.",
+                    "Playback Test",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(
+                    ex,
+                    "Playback validation failed.");
+
+                MessageBox.Show(
+                    ex.Message,
+                    "Playback Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
 

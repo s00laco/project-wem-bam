@@ -227,3 +227,209 @@ The public stream interface is represented by `libstreamfile_t`, which defines c
 The internal header `vgmstream.h` includes documentation indicating that consumers should migrate to the public API defined by `libvgmstream.h`.
 
 The internal headers (`vgmstream.h` and `streamfile.h`) remain part of the source distribution and describe the decoder's internal implementation.
+
+---
+# Native libvgmstream Build Investigation (r2117)
+
+## Objective
+
+Determine whether the frozen `vgmstream` r2117 source can produce the native shared library required for external consumers, and identify the runtime artefacts produced by the official CMake build.
+
+## Investigation
+
+A clean build was performed from the frozen r2117 source using the project's CMake build system with shared libraries enabled.
+
+The investigation examined:
+
+- whether `libvgmstream.dll` was produced
+- which additional runtime artefacts were generated
+- the native runtime dependencies of the resulting shared library
+
+The completed build was then inspected using `dumpbin /DEPENDENTS` and the build output directories were searched to identify all generated DLLs.
+
+The distributed Windows x64 package documentation (`Usage.md`) was also reviewed to determine the expected deployment layout for native codec libraries. :contentReference[oaicite:0]{index=0}
+
+## Findings
+
+The shared-library build successfully produced:
+
+- `libvgmstream.dll`
+- `libvgmstream.lib`
+- `libvgmstream.exp`
+
+Inspection of the generated build output confirmed that `libvgmstream.dll` was the **only DLL produced** by the CMake build.
+
+No codec DLLs were generated.
+
+The upstream `Usage.md` documentation states that Windows deployments require the following companion DLLs to be supplied alongside `libvgmstream.dll`, rather than being produced by the shared-library build: :contentReference[oaicite:0]{index=0}
+
+- `libvorbis.dll`
+- `libmpg123-0.dll`
+- `libg719_decode.dll`
+- `avcodec-vgmstream-59.dll`
+- `avformat-vgmstream-59.dll`
+- `avutil-vgmstream-57.dll`
+- `swresample-vgmstream-4.dll`
+- `libatrac9.dll`
+- `libcelt-0061.dll`
+- `libcelt-0110.dll`
+- `libspeex-1.dll`
+
+`dumpbin /DEPENDENTS` confirmed direct imports for:
+
+- `libmpg123-0.dll`
+- `libvorbis.dll`
+- `libg719_decode.dll`
+- `libatrac9.dll`
+- `libcelt-0061.dll`
+- `libcelt-0110.dll`
+- `libspeex-1.dll`
+
+along with the expected Microsoft Visual C++ runtime and Windows system libraries.
+
+## Conclusion
+
+The frozen r2117 source successfully builds the public `libvgmstream` shared library.
+
+The shared-library build does **not** produce the codec DLLs required by `libvgmstream.dll`. This behaviour is consistent with the upstream Windows distribution, whose documentation specifies that these codec DLLs are supplied separately. :contentReference[oaicite:2]{index=2}
+
+---
+
+---
+
+# libvgmstream Output Format and Buffer Contract Investigation
+
+## Objective
+
+Determine how libvgmstream selects its output sample format and establish the meaning and sizing requirements of the `libvgmstream_fill()` buffer parameters.
+
+## Findings
+
+Investigation of the libvgmstream source and public API established that output format selection is controlled by the `force_sfmt` configuration value.
+
+When an explicit output format is supplied, libvgmstream maps the public format value to the corresponding internal sample format.
+
+When `force_sfmt` is not supplied, libvgmstream does not default to PCM16. Instead, it derives the output format from the codec's native sample type, subject to the documented compatibility conversions.
+
+For the investigated `coding_VORBIS_custom` decoder:
+
+    coding_VORBIS_custom
+    |
+    v
+    codec_get_info()
+    |
+    v
+    sample_type = SFMT_FLT
+    |
+    v
+    mixing_get_input_sample_type()
+    |
+    v
+    mixing_get_output_sample_type()
+    |
+    v
+    sfmt_get_sample_size(SFMT_FLT)
+    |
+    v
+    sample_size = 4
+
+`SFMT_FLT` therefore uses a 4-byte sample size.
+
+The `libvgmstream_fill()` public API defines `buf_samples` as the requested number of samples to copy and requires the caller's output buffer to be large enough for:
+
+    buf_samples × channels × sample_size
+
+The implementation copies samples until either the requested sample count has been reached or no further output is available.
+
+Before returning, the decoder state records:
+
+    decoder->buf_samples = buf_copied
+
+and:
+
+    decoder->buf_bytes =
+        buf_copied × sample_size × channels
+
+`decoder->buf_bytes` therefore represents the number of decoded output bytes produced for the selected output sample format.
+
+## Official API Examples
+
+The official libvgmstream API examples were also examined.
+
+The PCM16 example explicitly requests:
+
+    LIBVGMSTREAM_SFMT_PCM16
+
+and sizes its output buffer using the PCM16 element size and channel count.
+
+The general command-line implementation sizes its output buffer using:
+
+    sample_buffer_size × format->sample_size × format->channels
+
+rather than assuming a fixed sample size.
+
+The examples use `decoder->buf_bytes` directly as the authoritative number of decoded output bytes.
+
+## Conclusion
+
+The investigation confirms that:
+
+- libvgmstream does not implicitly default to PCM16 when no output format is specified.
+- The selected output sample format determines `sample_size`.
+- `SFMT_FLT` has a sample size of 4 bytes.
+- `libvgmstream_fill()` requires an output buffer sized according to `buf_samples × channels × sample_size`.
+- `decoder->buf_samples` records the number of samples copied.
+- `decoder->buf_bytes` records the corresponding number of output bytes.
+- The official examples size buffers according to the selected sample format and channel count rather than assuming a fixed output element size.
+
+---
+
+# NAudio IWaveProvider Read and Playback Buffer Investigation
+
+## Objective
+
+Determine how NAudio consumes data supplied by an `IWaveProvider` and establish the behaviour when a provider returns fewer bytes than the requested `count`.
+
+## Findings
+
+The `IWaveProvider.Read()` interface is byte-oriented:
+
+    Read(byte[] buffer, int offset, int count)
+
+The `count` parameter represents the number of bytes requested for the current read operation.
+
+The return value represents the number of bytes actually written to the supplied buffer.
+
+NAudio's `WaveProvider16` converts the byte-oriented request into a sample-oriented request for derived providers and expects the provider to supply the requested amount of audio data when available.
+
+NAudio's `BufferedWaveProvider` defaults to `ReadFully = true`. When fewer bytes are available than requested, it fills the remainder of the destination buffer with zeroes and returns the full requested count.
+
+The WinMM playback implementation was also examined.
+
+When a playback buffer is refilled, `WaveOutBuffer.OnDone()` performs a single `Read()` call using the complete playback buffer size.
+
+If the provider returns fewer bytes than the requested buffer size, the implementation does not perform another `Read()` to fill the remainder. Instead, the unused portion of the playback buffer is zero-filled before the complete buffer is submitted to the audio device.
+
+Therefore, for a playback request of:
+
+    28800 bytes
+
+a provider returning:
+
+    16384 bytes
+
+leaves:
+
+    28800 - 16384 = 12416 bytes
+
+which are submitted as silence.
+
+## Conclusion
+
+The investigation confirms that NAudio playback providers must account for the full requested playback buffer when additional audio data is available.
+
+A provider that returns fewer bytes than requested can cause the unused portion of the playback buffer to be filled with silence by the playback implementation.
+
+This behaviour is distinct from the `IWaveProvider` interface itself, which permits a read to return fewer bytes. The practical behaviour depends on how the consuming NAudio output implementation handles the returned byte count.
+
+For continuous generated or decoded audio, the provider therefore needs to continue supplying data within the same `Read()` operation when additional audio is available.

@@ -369,16 +369,40 @@
 				<!-- ================================================= -->
 
 				<StackPanel x:Name="AdvancedPage"
-                            Visibility="Collapsed">
+							Visibility="Collapsed">
 
 					<TextBlock Text="Advanced"
-                               FontSize="20"
-                               FontWeight="SemiBold"
-                               Margin="0,0,0,20"/>
+							   FontSize="20"
+							   FontWeight="SemiBold"
+							   Margin="0,0,0,20"/>
 
-					<TextBlock Text="Advanced settings will appear here."
-                               FontStyle="Italic"
-                               Foreground="Gray"/>
+					<TextBlock Text="Playback Validation"
+							   FontSize="16"
+							   FontWeight="SemiBold"
+							   Margin="0,0,0,12"/>
+
+					<TextBlock Text="Selected WEM File:"
+							   Margin="0,0,0,4"/>
+
+					<TextBox x:Name="SelectedWemFileTextBox"
+							 IsReadOnly="True"
+							 Margin="0,0,0,12"/>
+
+					<StackPanel Orientation="Horizontal">
+
+						<Button x:Name="BrowseWemButton"
+								Content="Browse..."
+								Width="110"
+								Margin="0,0,8,0"
+								Click="BrowseWemButton_Click"/>
+
+						<Button x:Name="PlayWemButton"
+								Content="Play"
+								Width="90"
+								IsEnabled="False"
+								Click="PlayWemButton_Click"/>
+
+					</StackPanel>
 
 				</StackPanel>
 

@@ -515,3 +515,64 @@ Higher-level behaviour belongs in managed wrapper classes such as `LibVgmStream`
 **Reason**
 
 Maintaining a thin ABI layer keeps native interoperability isolated, simplifies future library upgrades, and provides a stable foundation for the managed playback subsystem.
+
+---
+
+## 2026-08-01
+
+### Vendored Native Runtime
+
+**Decision**
+
+Wem Bam vendors the native runtime required by the frozen libvgmstream r2117 dependency.
+
+The native runtime consists of:
+
+- `libvgmstream.dll`
+- the required companion native libraries
+
+These binaries are committed as third-party dependencies within the repository and are automatically copied to the application's output directory during the .NET build.
+
+Contributors are not required to build libvgmstream locally in order to build or run Wem Bam.
+
+**Reason**
+
+Vendoring the native runtime provides a reproducible development environment, ensures all contributors use the same tested native library version, and keeps the build process focused on the .NET application rather than requiring additional native build tooling.
+
+---
+
+## 2026-08-09
+
+### Explicit PCM16 Playback Output
+
+**Decision**
+
+Wem Bam will explicitly configure libvgmstream to produce PCM16 output for playback.
+
+**Reason**
+
+libvgmstream does not default to PCM16 when no output format is specified. It preserves the decoder's native output format in that case, and the Starfield WEM format investigated during playback naturally produces `SFMT_FLT`.
+
+Wem Bam's existing playback pipeline is designed around PCM16 data and NAudio's PCM wave format. Explicitly requesting PCM16 establishes a consistent output format at the libvgmstream boundary and allows the existing managed playback pipeline to consume the decoded data correctly.
+
+No runtime output-format selection or support for alternative output formats is required for the current playback architecture.
+
+---
+
+## 2026-08-09
+
+### Complete NAudio Playback Reads
+
+**Decision**
+
+`VgmStreamWaveProvider.Read()` will continue decoding and copying audio until the requested NAudio byte count has been satisfied or decoding produces no further data.
+
+**Reason**
+
+A single libvgmstream decode operation may produce fewer bytes than the NAudio playback buffer requests.
+
+NAudio's playback implementations may submit the entire playback buffer after a single `Read()` call and zero-fill any portion not supplied by the provider. Returning a partial decode while more audio is available therefore introduces silence into continuous playback.
+
+The provider must therefore bridge the difference between NAudio's requested byte count and the amount produced by each individual libvgmstream decode operation.
+
+This keeps the NAudio boundary byte-oriented while allowing libvgmstream to continue operating in its sample/frame-oriented decode model.
