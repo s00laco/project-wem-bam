@@ -40,7 +40,7 @@ namespace WemBam.Database
 
             SetSchemaVersion(
                 connection,
-                DatabaseConstants.CurrentSchemaVersion);
+                1);
         }
 
         private static void SetSchemaVersion(
@@ -73,6 +73,24 @@ namespace WemBam.Database
                 SetSchemaVersion(connection, 3);
 
                 currentVersion = 3;
+            }
+
+            if (currentVersion < 4)
+            {
+                DatabaseSchema.UpgradeToVersion4(connection);
+
+                SetSchemaVersion(connection, 4);
+
+                currentVersion = 4;
+            }
+
+            if (currentVersion < 5)
+            {
+                DatabaseSchema.UpgradeToVersion5(connection);
+
+                SetSchemaVersion(connection, 5);
+
+                currentVersion = 5;
             }
         }
     }

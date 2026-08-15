@@ -576,3 +576,135 @@ NAudio's playback implementations may submit the entire playback buffer after a 
 The provider must therefore bridge the difference between NAudio's requested byte count and the amount produced by each individual libvgmstream decode operation.
 
 This keeps the NAudio boundary byte-oriented while allowing libvgmstream to continue operating in its sample/frame-oriented decode model.
+
+---
+
+## 2026-08-10
+
+### Wwise Event Metadata and Relationships
+
+**Decision**
+
+Wem Bam will store Wwise Event metadata separately from `AudioAssets` and represent the relationship between WEM audio assets and Wwise Events as a many-to-many relationship.
+
+Wwise Event metadata will be imported from Starfield's `SoundBanksInfo.json`.
+
+The metadata model will retain the following Wwise Event information:
+
+- Wwise Event ID
+- Event Name
+- Object Path
+- Duration Type
+- Duration Min
+- Duration Max
+
+WEM audio assets will retain their own File ID as explicit metadata.
+
+The WEM-to-Event association will be stored in a dedicated relationship table, allowing:
+
+- an AudioAsset to be associated with multiple Wwise Events;
+- a Wwise Event to reference multiple AudioAssets;
+- relationships to be traversed in either direction.
+
+`SoundBanksInfo.json` will be configured and imported separately from normal audio indexing. It will be presented to the user alongside audio source configuration because it provides metadata used to give indexed WEM assets meaningful Wwise Event information.
+
+The imported Wwise metadata remains indexed data and is kept separate from user-created information such as notes, tags, collections and favourites.
+
+**Reason**
+
+Analysis of the complete Starfield `SoundBanksInfo.json` confirmed that the relationship between streamed WEM files and Wwise Events is genuinely many-to-many.
+
+Flattening Event information directly onto `AudioAssets` would therefore misrepresent the source data and prevent Wem Bam from correctly representing multiple Event associations.
+
+A dedicated relationship preserves the actual Wwise structure while supporting future search, display and navigation between related audio assets and Events.
+
+The separate metadata import also keeps Wwise metadata acquisition independent from normal audio discovery and indexing, allowing either process to be updated without unnecessarily repeating the other.
+
+---
+
+## 2026-08-10
+
+### Wwise Metadata Import and AudioAsset Relationship Model
+
+**Decision**
+
+Wem Bam will treat Starfield Wwise metadata and indexed audio assets as two independently populated datasets that are connected through the shared WEM File ID.
+
+During normal WEM audio indexing, the numeric File ID will be extracted from the WEM filename and stored in `AudioAssets.FileId`.
+
+When `SoundBanksInfo.json` is imported, the WEM File ID supplied by each `ReferencedStreamedFiles.Id` will be stored as part of the Wwise Event relationship data.
+
+The metadata import will not require the corresponding `AudioAsset` to already exist and will not perform a lookup against `AudioAssets` during import. The two datasets are allowed to be populated in either order.
+
+Wwise Event metadata will be stored in the dedicated `WwiseEvents` table.
+
+The many-to-many relationship between WEM audio and Wwise Events will be stored in the dedicated `AudioAssetToWwiseEvents` relationship table using:
+
+- `FileId`
+- `WwiseEventId`
+
+The relationship table will therefore reference the shared WEM File ID rather than the internal `AudioAssets.Id`.
+
+The relationship between indexed audio and Wwise metadata will be resolved when the data is queried, using the shared File ID.
+
+`SoundBanksInfo.json` import will remain a separate operation from normal audio indexing.
+
+Audio indexing will populate and update `AudioAssets` without modifying Wwise Event metadata.
+
+Wwise metadata import will populate and update `WwiseEvents` and `AudioAssetToWwiseEvents` without modifying or creating `AudioAssets`.
+
+Re-importing Wwise metadata will replace the previously imported Wwise Event metadata and relationship data with the newly imported dataset. Audio indexing remains independent of this process.
+
+**Reason**
+
+The WEM filename provides the numeric File ID used by Starfield's Wwise metadata. Wem Bam therefore obtains the File ID during audio discovery, while `SoundBanksInfo.json` independently provides the same identifier through `ReferencedStreamedFiles.Id`.
+
+Requiring metadata import to find or validate an existing `AudioAsset` would unnecessarily couple two independent indexing processes and would make the result dependent on which data had been imported first.
+
+Using the shared File ID allows the audio and metadata datasets to remain independent while still supporting joins when searching, displaying, or navigating between audio assets and Wwise Events.
+
+This also preserves the confirmed many-to-many relationship between WEM files and Wwise Events without requiring an `AudioAsset` record to exist when the metadata is imported.
+
+---
+
+## 2026-08-14
+
+### Logical Audio Assets and Multiple Physical Sources
+
+**Decision**
+
+Wem Bam will treat each WEM File ID as a single logical audio asset, regardless of how many physical copies of that WEM are discovered.
+
+Physical occurrences of an audio asset will be stored separately from the logical `AudioAsset` record, allowing a single audio asset to have multiple physical sources.
+
+Each physical source will retain the information required to locate and access that occurrence, including its source, container and asset path.
+
+Where the same WEM File ID is discovered in both a BA2 archive and as a loose WEM file:
+
+- The BA2 occurrence is considered the canonical game audio source because it originates from the shipped game.
+- A loose WEM occurrence is considered an override or additional source.
+- If no BA2 occurrence exists for a File ID, a loose WEM occurrence may serve as the default source.
+- Multiple physical sources must remain available even when they contain identical audio.
+- Physical sources containing different audio under the same File ID must also remain associated with the same logical audio asset and be distinguishable from one another.
+
+The database will therefore retain enough information to determine whether multiple physical sources contain the same or different audio content.
+
+The default playback source will be stored as part of the underlying asset/source data rather than being determined solely by the UI.
+
+The initial default source will be the canonical BA2 occurrence when one exists. Where no BA2 occurrence exists, an available loose WEM occurrence will become the default.
+
+The user will be able to change which physical source is designated as the default playback source. The UI for changing this selection will be implemented separately from the underlying database support.
+
+User-created information such as notes, tags, collections and favourites remains separate from indexed audio and source data.
+
+**Reason**
+
+The same WEM File ID can legitimately be discovered in multiple physical locations, such as a shipped BA2 archive and a loose modded WEM.
+
+Treating each occurrence as a separate logical audio asset would cause the same sound to appear multiple times in the user's library and would make later organisation and user metadata unnecessarily difficult.
+
+Keeping one logical asset with multiple physical sources allows Wem Bam to represent the relationship between the shipped game audio and modded or extracted copies without losing either occurrence.
+
+A loose WEM may intentionally replace the shipped BA2 version, so different audio content under the same File ID must not be discarded or merged into an indistinguishable copy.
+
+The physical source that is played is therefore a property of the logical audio asset and can be changed by the user without creating another logical asset.

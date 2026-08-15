@@ -2,14 +2,19 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Threading;
 using Microsoft.Win32;
+using Mutagen.Bethesda;
+using Mutagen.Bethesda.Archives;
+using NAudio.Wave;
+using Noggog;
 using WemBam.Logging;
 using WemBam.Models;
 using WemBam.Services;
+using WemBam.Services.Audio;
 using WemBam.Services.Audio.Interop;
 using WemBam.Services.Audio.Playback;
-using NAudio.Wave;
 
 namespace WemBam
 {
@@ -535,6 +540,141 @@ namespace WemBam
                 MessageBox.Show(
                     "Wem Bam was unable to open the selected WEM file.",
                     "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private void BrowseBa2Button_Click(
+    object sender,
+    RoutedEventArgs e)
+        {
+            try
+            {
+                OpenFileDialog dialog = new()
+                {
+                    Title = "Select BA2 Archive",
+                    Filter = "Starfield Archives (*.ba2)|*.ba2",
+                    Multiselect = false
+                };
+
+                if (dialog.ShowDialog() != true)
+                {
+                    return;
+                }
+
+                IArchiveReader archive =
+                    Archive.CreateReader(
+                        GameRelease.Starfield,
+                        new FilePath(dialog.FileName));
+
+                string[] wemEntries = archive.Files
+                    .Where(file =>
+                        Path.GetExtension(file.Path)
+                            .Equals(
+                                ".wem",
+                                StringComparison.OrdinalIgnoreCase))
+                    .Select(file => file.Path)
+                    .ToArray();
+
+                SelectedBa2FileTextBox.Text =
+                    dialog.FileName;
+
+                SelectedBa2WemComboBox.ItemsSource =
+                    wemEntries;
+
+                SelectedBa2WemComboBox.SelectedIndex = -1;
+
+                SelectedBa2WemComboBox.IsEnabled =
+                    wemEntries.Length > 0;
+
+                PlayBa2WemButton.IsEnabled = false;
+
+                if (wemEntries.Length == 0)
+                {
+                    MessageBox.Show(
+                        "The selected BA2 archive does not contain any WEM files.",
+                        "BA2 Playback Test",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(
+                    ex,
+                    "Failed to select BA2 playback test archive.");
+
+                MessageBox.Show(
+                    "Wem Bam was unable to open the selected BA2 archive.",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private void SelectedBa2WemComboBox_SelectionChanged(
+            object sender,
+            SelectionChangedEventArgs e)
+        {
+            PlayBa2WemButton.IsEnabled =
+            SelectedBa2WemComboBox.SelectedIndex >= 0;
+        }
+
+        private void PlayBa2WemButton_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            try
+            {
+                if (SelectedBa2WemComboBox.SelectedItem is not string wemEntry)
+                {
+                    return;
+                }
+
+                AudioStreamRequest request = new()
+                {
+                    SourceType = SourceType.File,
+                    ContainerPath = SelectedBa2FileTextBox.Text,
+                    AssetPath = wemEntry
+                };
+
+                var streamProvider =
+                    AudioStreamProviderFactory.Create(request);
+
+                using Stream stream =
+                    streamProvider.OpenStream(request);
+
+                using LibVgmStream decoder =
+                    new(
+                        stream,
+                        Path.GetFileName(wemEntry));
+
+                VgmStreamWaveProvider provider =
+                    new(decoder);
+
+                using WaveOutEvent output =
+                    new();
+
+                output.Init(provider);
+
+                output.Play();
+
+                MessageBox.Show(
+                    "Playback started.\n\nClick OK to stop playback.",
+                    "BA2 Playback Test",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(
+                    ex,
+                    "BA2 playback validation failed.");
+
+                MessageBox.Show(
+                    ex.Message,
+                    "BA2 Playback Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }

@@ -103,15 +103,42 @@ namespace WemBam.Services
 
                             AudioAsset audioAsset = new()
                             {
-                                SourceId = source.Id,
+                                FileId = Path.GetFileNameWithoutExtension(file.Path),
                                 FileName = Path.GetFileName(path),
                                 FileExtension = Path.GetExtension(path),
-                                ContainerPath = source.Path,
-                                AssetPath = path,
                                 Duration = null
                             };
 
-                            DatabaseManager.AddAudioAsset(audioAsset);
+                            AudioAsset? existingAudioAsset =
+                                DatabaseManager.FindAudioAssetByFileId(
+                                    audioAsset.FileId!);
+
+                            if (existingAudioAsset == null)
+                            {
+                                audioAsset.Id =
+                                    DatabaseManager.AddAudioAsset(audioAsset);
+                            }
+                            else
+                            {
+                                audioAsset.Id = existingAudioAsset.Id;
+                                audioAsset.DefaultSourceId = existingAudioAsset.DefaultSourceId;
+                            }
+
+                            AudioAssetSource audioAssetSource = new()
+                            {
+                                AudioAssetId = audioAsset.Id,
+                                SourceId = source.Id,
+                                ContainerPath = source.Path,
+                                AssetPath = path,
+                                ContentHash = CalculateContentHash(file)
+                            };
+
+                            long audioAssetSourceId =
+                                DatabaseManager.AddAudioAssetSource(audioAssetSource);
+
+                            DatabaseManager.SetDefaultAudioAssetSource(
+                                audioAsset.Id,
+                                audioAssetSourceId);
 
                             processed++;
 
@@ -136,6 +163,17 @@ namespace WemBam.Services
                 cancellationToken);
 
             return result;
+        }
+
+        private static string CalculateContentHash(
+            IArchiveFile file)
+        {
+            using Stream stream = file.AsStream();
+
+            byte[] hash =
+                System.Security.Cryptography.SHA256.HashData(stream);
+
+            return Convert.ToHexString(hash);
         }
     }
 }

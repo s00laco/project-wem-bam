@@ -433,3 +433,87 @@ A provider that returns fewer bytes than requested can cause the unused portion 
 This behaviour is distinct from the `IWaveProvider` interface itself, which permits a read to return fewer bytes. The practical behaviour depends on how the consuming NAudio output implementation handles the returned byte count.
 
 For continuous generated or decoded audio, the provider therefore needs to continue supplying data within the same `Read()` operation when additional audio is available.
+
+---
+
+# Starfield Wwise Event Metadata Investigation
+
+## Objective
+
+Determine whether Starfield's `SoundBanksInfo.json` can provide meaningful Wwise Event metadata that can be associated with Wem Bam's indexed WEM audio assets.
+
+## Investigation
+
+The complete `SoundBanksInfo.json` dataset was examined to determine the relationship between Wwise Events and their referenced streamed files.
+
+The investigation focused on:
+
+- Wwise Event IDs
+- Event Names
+- Event Object Paths
+- Event Duration Types
+- Event Duration Min/Max values
+- Referenced streamed-file IDs
+- Referenced streamed-file paths
+- The relationship between streamed-file IDs and generated WEM filenames
+- The cardinality of the WEM-to-Event relationship
+
+## Findings
+
+The `SoundBanksInfo.json` structure provides Wwise Event metadata including:
+
+- `Id`
+- `Name`
+- `ObjectPath`
+- `GUID`
+- `DurationType`
+- `DurationMin`
+- `DurationMax`
+- `ReferencedStreamedFiles`
+
+Each `ReferencedStreamedFiles` entry provides:
+
+- `Id`
+- `Language`
+- `ShortName`
+- `Path`
+
+The `ShortName` and source audio references represent the original Wwise source audio, which is generally a `.wav` file.
+
+The `ReferencedStreamedFiles.Id` corresponds to the generated WEM file ID used by Wem Bam to identify the associated audio asset.
+
+The Event's own `Id` is a separate identifier and does not correspond to the WEM filename.
+
+The complete dataset confirmed that the relationship between WEM files and Wwise Events is many-to-many.
+
+A single Wwise Event can reference multiple WEM files.
+
+A single WEM file can be referenced by multiple Wwise Events.
+
+Therefore, Event metadata cannot be represented as a single property directly on an `AudioAsset`.
+
+The Event metadata also provides useful information that is not represented by the WEM file itself. In particular, `DurationType`, `DurationMin`, and `DurationMax` describe the Event's expected playback behaviour.
+
+For example, an Event with:
+
+- `DurationType = OneShot`
+- `DurationMin = 10.058301`
+- `DurationMax = 21.457775`
+
+provides an Event-level duration range that is distinct from the duration of any individual referenced WEM.
+
+## Conclusion
+
+`SoundBanksInfo.json` provides a reliable source of Wwise Event metadata that can be associated with Wem Bam's indexed WEM assets through the streamed-file ID.
+
+The confirmed many-to-many relationship requires the Event metadata and WEM/Event associations to be represented separately from the `AudioAssets` records.
+
+The metadata source should remain separate from normal audio indexing. WEM discovery populates the audio asset data, while `SoundBanksInfo.json` can be imported separately and used to populate Wwise Event metadata and the relationships between Events and indexed audio assets.
+
+The resulting relationship must support traversal in both directions:
+
+AudioAsset → Wwise Events
+
+Wwise Event → AudioAssets
+
+This provides the foundation for searching by Event metadata and for browsing other WEM assets associated with the same Wwise Event.

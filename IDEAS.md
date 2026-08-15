@@ -354,6 +354,27 @@ Future collections should remain fully user-configurable, including the ability 
 
 ---
 
+## Multiple Audio Sources
+
+**Status:** Future
+
+Allow a single logical audio asset to have multiple physical sources.
+
+The browser should make it possible to:
+
+- See all available physical sources for an audio asset.
+- Distinguish the canonical BA2 source from loose WEM sources.
+- Identify whether sources contain identical or different audio.
+- See when a loose WEM represents a replacement or override of the shipped audio.
+- Select which physical source is used for playback.
+- Change the default playback source for an audio asset.
+
+The logical audio asset should remain a single item in the library regardless of how many physical sources exist.
+
+The source-selection interface should be implemented as part of the future audio browser/playback experience rather than during the underlying indexing work.
+
+---
+
 ## Backup & Restore
 
 **Status:** Future
@@ -578,3 +599,22 @@ Reason
 
 The stream-provider architecture allows playback to remain independent of physical storage (loose WEM vs BA2) 
 while avoiding reliance on an external application.
+
+---
+
+## BA2 WEM Entry Loading Feedback
+
+**Status:** Future
+
+The BA2 playback validation test (on the Settings >> Advanced tab) can take significant time to enumerate WEM entries from large BA2 archives.
+
+Provide clear visual feedback while the WEM entry list is being populated so the UI does not appear unresponsive.
+
+Possible behaviour:
+
+- Disable the WEM-entry selector while enumeration is in progress.
+- Disable the BA2 Play button until enumeration has completed.
+- Display a simple loading or status indication such as "Loading WEM entries..."
+- Re-enable the WEM-entry selector once enumeration is complete.
+
+If the enumeration remains a sufficiently long-running operation, perform it without blocking the UI.

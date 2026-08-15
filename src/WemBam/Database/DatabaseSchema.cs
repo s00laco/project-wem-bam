@@ -74,5 +74,94 @@ namespace WemBam.Database
             command.CommandText = sql;
             command.ExecuteNonQuery();
         }
+
+        public static void UpgradeToVersion4(
+            SqliteConnection connection)
+        {
+            const string sql = """
+        ALTER TABLE AudioAssets
+            ADD COLUMN FileId TEXT NULL;
+
+        CREATE TABLE IF NOT EXISTS WwiseEvents
+        (
+            Id TEXT PRIMARY KEY,
+            Name TEXT NOT NULL,
+            ObjectPath TEXT NOT NULL,
+            DurationType TEXT NOT NULL,
+            DurationMin REAL NULL,
+            DurationMax REAL NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS WwiseStreamedFiles
+        (
+            FileId TEXT PRIMARY KEY,
+            Language TEXT NOT NULL,
+            ShortName TEXT NOT NULL,
+            Path TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS WwiseEventToStreamedFiles
+        (
+            WwiseEventId TEXT NOT NULL,
+            FileId TEXT NOT NULL,
+            UNIQUE(WwiseEventId, FileId)
+        );
+
+        CREATE INDEX IF NOT EXISTS IX_AudioAssets_FileId
+            ON AudioAssets(FileId);
+
+        CREATE INDEX IF NOT EXISTS IX_WwiseEventToStreamedFiles_WwiseEventId
+            ON WwiseEventToStreamedFiles(WwiseEventId);
+
+        CREATE INDEX IF NOT EXISTS IX_WwiseEventToStreamedFiles_FileId
+            ON WwiseEventToStreamedFiles(FileId);
+        """;
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = sql;
+            command.ExecuteNonQuery();
+        }
+
+        public static void UpgradeToVersion5(
+            SqliteConnection connection)
+        {
+            const string sql = """
+        DROP TABLE IF EXISTS AudioAssets;
+
+        CREATE TABLE IF NOT EXISTS AudioAssets
+        (
+            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+            FileId TEXT NOT NULL UNIQUE,
+            FileName TEXT NOT NULL,
+            FileExtension TEXT NOT NULL,
+            Duration INTEGER NULL,
+            DateIndexed INTEGER NOT NULL,
+            DefaultSourceId INTEGER NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS AudioAssetSources
+        (
+            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+            AudioAssetId INTEGER NOT NULL,
+            SourceId INTEGER NOT NULL,
+            ContainerPath TEXT NULL,
+            AssetPath TEXT NOT NULL,
+            ContentHash TEXT NULL
+        );
+
+        CREATE INDEX IF NOT EXISTS IX_AudioAssets_FileId
+            ON AudioAssets(FileId);
+
+        CREATE INDEX IF NOT EXISTS IX_AudioAssetSources_AudioAssetId
+            ON AudioAssetSources(AudioAssetId);
+
+        CREATE INDEX IF NOT EXISTS IX_AudioAssetSources_SourceId
+            ON AudioAssetSources(SourceId);
+        """;
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = sql;
+            command.ExecuteNonQuery();
+        }
     }
 }

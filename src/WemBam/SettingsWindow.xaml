@@ -404,6 +404,46 @@
 
 					</StackPanel>
 
+					<Border Height="1"
+        Background="#FFD8D8D8"
+        Margin="0,20,0,20"/>
+
+					<TextBlock Text="BA2 Playback Validation"
+							   FontSize="16"
+							   FontWeight="SemiBold"
+							   Margin="0,0,0,12"/>
+
+					<TextBlock Text="Selected BA2 Archive:"
+							   Margin="0,0,0,4"/>
+
+					<TextBox x:Name="SelectedBa2FileTextBox"
+							 IsReadOnly="True"
+							 Margin="0,0,0,12"/>
+
+					<StackPanel Orientation="Horizontal"
+								Margin="0,0,0,12">
+
+						<Button x:Name="BrowseBa2Button"
+								Content="Browse..."
+								Width="110"
+								Click="BrowseBa2Button_Click"/>
+
+					</StackPanel>
+
+					<TextBlock Text="WEM Entry:"
+							   Margin="0,0,0,4"/>
+
+					<ComboBox x:Name="SelectedBa2WemComboBox"
+							  IsEnabled="False"
+							  Margin="0,0,0,12"
+                              SelectionChanged="SelectedBa2WemComboBox_SelectionChanged"/>
+
+					<Button x:Name="PlayBa2WemButton"
+							Content="Play"
+							Width="90"
+							IsEnabled="False"
+                            Click="PlayBa2WemButton_Click"/>
+
 				</StackPanel>
 
 			</Grid>
