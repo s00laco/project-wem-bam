@@ -66,7 +66,8 @@ namespace WemBam.Services
             using JsonDocument document =
                 JsonDocument.Parse(stream);
 
-            List<WwiseEvent> events = new();
+            Dictionary<string, WwiseEvent> events =
+                new(StringComparer.Ordinal);
 
             Dictionary<string, WwiseStreamedFile> streamedFiles =
                 new(StringComparer.Ordinal);
@@ -78,6 +79,14 @@ namespace WemBam.Services
                 document.RootElement;
 
             if (!root.TryGetProperty(
+                    "SoundBanksInfo",
+                    out JsonElement soundBanksInfo))
+            {
+                throw new InvalidDataException(
+                    "SoundBanksInfo.json does not contain a SoundBanksInfo object.");
+            }
+
+            if (!soundBanksInfo.TryGetProperty(
                     "SoundBanks",
                     out JsonElement soundBanks))
             {
@@ -90,66 +99,57 @@ namespace WemBam.Services
                 cancellationToken.ThrowIfCancellationRequested();
 
                 if (!soundBank.TryGetProperty(
-                        "IncludedMemoryFiles",
-                        out JsonElement includedMemoryFiles))
+                        "IncludedEvents",
+                        out JsonElement includedEvents))
                 {
                     continue;
                 }
 
                 foreach (
-                    JsonElement memoryFile
-                    in includedMemoryFiles.EnumerateArray())
+                    JsonElement eventElement
+                    in includedEvents.EnumerateArray())
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    if (!memoryFile.TryGetProperty(
-                            "IncludedEvents",
-                            out JsonElement includedEvents))
+                    WwiseEvent wwiseEvent =
+                        ParseEvent(eventElement);
+
+                    if (!events.ContainsKey(wwiseEvent.Id))
+                    {
+                        events.Add(
+                            wwiseEvent.Id,
+                            wwiseEvent);
+                    }
+
+                    if (!eventElement.TryGetProperty(
+                            "ReferencedStreamedFiles",
+                            out JsonElement referencedStreamedFiles))
                     {
                         continue;
                     }
 
                     foreach (
-                        JsonElement eventElement
-                        in includedEvents.EnumerateArray())
+                        JsonElement streamedFileElement
+                        in referencedStreamedFiles.EnumerateArray())
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        WwiseEvent wwiseEvent =
-                            ParseEvent(eventElement);
+                        WwiseStreamedFile streamedFile =
+                            ParseStreamedFile(
+                                streamedFileElement);
 
-                        events.Add(wwiseEvent);
-
-                        if (!eventElement.TryGetProperty(
-                                "ReferencedStreamedFiles",
-                                out JsonElement referencedStreamedFiles))
+                        if (!streamedFiles.ContainsKey(
+                                streamedFile.FileId))
                         {
-                            continue;
+                            streamedFiles.Add(
+                                streamedFile.FileId,
+                                streamedFile);
                         }
 
-                        foreach (
-                            JsonElement streamedFileElement
-                            in referencedStreamedFiles.EnumerateArray())
-                        {
-                            cancellationToken.ThrowIfCancellationRequested();
-
-                            WwiseStreamedFile streamedFile =
-                                ParseStreamedFile(
-                                    streamedFileElement);
-
-                            if (!streamedFiles.ContainsKey(
-                                    streamedFile.FileId))
-                            {
-                                streamedFiles.Add(
-                                    streamedFile.FileId,
-                                    streamedFile);
-                            }
-
-                            relationships.Add(
-                                (
-                                    wwiseEvent.Id,
-                                    streamedFile.FileId));
-                        }
+                        relationships.Add(
+                            (
+                                wwiseEvent.Id,
+                                streamedFile.FileId));
                     }
                 }
             }
@@ -163,7 +163,7 @@ namespace WemBam.Services
             });
 
             DatabaseManager.ReplaceWwiseMetadata(
-                events,
+                events.Values,
                 streamedFiles.Values,
                 relationships,
                 cancellationToken);

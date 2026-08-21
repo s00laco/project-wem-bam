@@ -33,6 +33,12 @@ namespace WemBam
 
         private BackgroundTaskProgress? _latestProgress;
 
+        private BackgroundTaskProgress? _latestWwiseMetadataProgress;
+
+        private string? _wwiseMetadataJsonPath;
+
+        private bool _isWwiseMetadataImportRunning;
+
         public SettingsWindow()
         {
             InitializeComponent();
@@ -131,6 +137,30 @@ namespace WemBam
         {
             Dispatcher.Invoke(() =>
             {
+                if (_isWwiseMetadataImportRunning)
+                {
+                    _latestWwiseMetadataProgress = null;
+
+                    WwiseMetadataProgressPanel.Visibility =
+                        Visibility.Visible;
+
+                    WwiseMetadataProgressBar.IsIndeterminate = true;
+                    WwiseMetadataProgressBar.Value = 0;
+
+                    WwiseMetadataStatusTextBlock.Text =
+                        "Preparing...";
+
+                    WwiseMetadataItemsProcessedTextBlock.Text =
+                        "0";
+
+                    WwiseMetadataElapsedTimeTextBlock.Text =
+                        "00:00:00";
+
+                    _elapsedTimer.Start();
+
+                    return;
+                }
+
                 _latestProgress = null;
 
                 IndexProgressPanel.Visibility =
@@ -161,6 +191,38 @@ namespace WemBam
         {
             Dispatcher.Invoke(() =>
             {
+                if (_isWwiseMetadataImportRunning)
+                {
+                    _latestWwiseMetadataProgress = progress;
+
+                    WwiseMetadataStatusTextBlock.Text =
+                        progress.StatusMessage;
+
+                    if (progress.TotalItems.HasValue)
+                    {
+                        WwiseMetadataItemsProcessedTextBlock.Text =
+                            $"{progress.ItemsProcessed} / {progress.TotalItems.Value}";
+
+                        WwiseMetadataProgressBar.IsIndeterminate = false;
+
+                        WwiseMetadataProgressBar.Value =
+                            progress.PercentageComplete ?? 0;
+                    }
+                    else
+                    {
+                        WwiseMetadataItemsProcessedTextBlock.Text =
+                            progress.ItemsProcessed.ToString();
+
+                        WwiseMetadataProgressBar.IsIndeterminate = true;
+                        WwiseMetadataProgressBar.Value = 0;
+                    }
+
+                    WwiseMetadataElapsedTimeTextBlock.Text =
+                        FormatElapsed(progress.Elapsed);
+
+                    return;
+                }
+
                 _latestProgress = progress;
 
                 CurrentOperationTextBlock.Text =
@@ -196,6 +258,18 @@ namespace WemBam
         {
             Dispatcher.Invoke(() =>
             {
+                if (_isWwiseMetadataImportRunning)
+                {
+                    Logger.Information(
+                        $"Wwise metadata import completed. Events processed: {result.ItemsProcessed}");
+
+                    _isWwiseMetadataImportRunning = false;
+
+                    ResetWwiseMetadataDisplay();
+
+                    return;
+                }
+
                 Logger.Information(
                     $"Index completed. Files processed: {result.ItemsProcessed}");
 
@@ -229,15 +303,35 @@ namespace WemBam
         {
             Dispatcher.Invoke(() =>
             {
+                if (_isWwiseMetadataImportRunning)
+                {
+                    Logger.Information("Wwise metadata import cancelled.");
+
+                    _isWwiseMetadataImportRunning = false;
+
+                    ResetWwiseMetadataDisplay();
+
+                    return;
+                }
+
                 Logger.Information("Index cancelled.");
 
                 ResetIndexingDisplay();
             });
         }
+
         private void ElapsedTimer_Tick(
-    object? sender,
-    EventArgs e)
+            object? sender,
+            EventArgs e)
         {
+            if (_isWwiseMetadataImportRunning)
+            {
+                WwiseMetadataElapsedTimeTextBlock.Text =
+                    FormatElapsed(_backgroundTaskManager.Elapsed);
+
+                return;
+            }
+
             ElapsedTimeTextBlock.Text =
                 FormatElapsed(_backgroundTaskManager.Elapsed);
         }
@@ -271,6 +365,28 @@ namespace WemBam
 
             IndexSourcesButton.Content =
                 "Index Sources";
+        }
+
+        private void ResetWwiseMetadataDisplay()
+        {
+            _elapsedTimer.Stop();
+
+            _latestWwiseMetadataProgress = null;
+
+            WwiseMetadataProgressPanel.Visibility =
+                Visibility.Collapsed;
+
+            WwiseMetadataProgressBar.IsIndeterminate = false;
+            WwiseMetadataProgressBar.Value = 0;
+
+            WwiseMetadataStatusTextBlock.Text =
+                string.Empty;
+
+            WwiseMetadataItemsProcessedTextBlock.Text =
+                string.Empty;
+
+            WwiseMetadataElapsedTimeTextBlock.Text =
+                string.Empty;
         }
 
         private void MarkIndexOutOfDate()
@@ -410,6 +526,46 @@ namespace WemBam
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
+        }
+
+        private void BrowseWwiseMetadataButton_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            OpenFileDialog dialog = new()
+            {
+                Filter = "SoundBanksInfo.json|SoundBanksInfo.json|JSON files (*.json)|*.json|All files (*.*)|*.*",
+                Title = "Select SoundBanksInfo.json"
+            };
+
+            if (dialog.ShowDialog() != true)
+            {
+                return;
+            }
+
+            _wwiseMetadataJsonPath = dialog.FileName;
+
+            WwiseMetadataJsonPathTextBox.Text =
+                _wwiseMetadataJsonPath;
+
+            ImportWwiseMetadataButton.IsEnabled = true;
+        }
+
+        private async void ImportWwiseMetadataButton_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(_wwiseMetadataJsonPath))
+            {
+                return;
+            }
+
+            _isWwiseMetadataImportRunning = true;
+
+            WwiseMetadataImportOperation operation =
+                new(_wwiseMetadataJsonPath);
+
+            await _backgroundTaskManager.StartAsync(operation);
         }
 
         private void RemoveSourceButton_Click(
