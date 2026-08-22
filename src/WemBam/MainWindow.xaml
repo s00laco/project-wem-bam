@@ -234,27 +234,37 @@
 							</Grid.RowDefinitions>
 
 							<!-- Filter -->
-							<Grid Grid.Row="0">
+                            <Grid Grid.Row="0">
 
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="Auto"/>
-									<ColumnDefinition Width="10"/>
-									<ColumnDefinition Width="*"/>
-								</Grid.ColumnDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="8"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
 
-								<Label Grid.Column="0"
-                                       Content="Filter"
-                                       VerticalAlignment="Center"
-                                       Padding="0"/>
+                                <Label Grid.Column="0"
+           Content="Filter"
+           VerticalAlignment="Center"
+           Padding="0"/>
 
-								<TextBox Grid.Column="2"
-                                         VerticalAlignment="Center"
-                                         MinWidth="150"/>
+                                <TextBox x:Name="FilterTextBox"
+             Grid.Column="2"
+             VerticalAlignment="Center"
+             MinWidth="150"/>
 
-							</Grid>
+                                <Button x:Name="SearchButton"
+            Grid.Column="4"
+            Content="Search"
+            Width="80"
+            Click="SearchButton_Click"/>
 
-							<!-- Results -->
-							<DataGrid Grid.Row="2"
+                            </Grid>
+
+                            <!-- Results -->
+                            <DataGrid x:Name="ResultsDataGrid"
+									  Grid.Row="2"
                                       MinWidth="450"
                                       AutoGenerateColumns="False"
                                       CanUserAddRows="False"
@@ -264,16 +274,119 @@
 
 								<DataGrid.Columns>
 
-									<DataGridTextColumn Header="Filename"
-                                                        Width="2*"/>
+                                    <DataGridTextColumn Header="Filename"
+														Binding="{Binding FileName}"
+														Width="1*"/>
 
-									<DataGridTextColumn Header="Path"
-                                                        Width="3*"/>
+                                    <DataGridTextColumn Header="Wwise Path"
+														Binding="{Binding WwisePath}"
+														Width="4*"/>
 
-									<DataGridTextColumn Header="File ID"
-                                                        Width="120"/>
+                                    <DataGridTemplateColumn Header="Wwise Events"
+                                                            Width="2*">
 
-								</DataGrid.Columns>
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+
+                                                <Grid>
+
+                                                    <!-- Normal display for 1–5 events -->
+                                                    <ItemsControl
+                                                        x:Name="NormalEventList"
+                                                        ItemsSource="{Binding WwiseEvents}">
+
+                                                        <ItemsControl.ItemTemplate>
+                                                            <DataTemplate>
+                                                                <TextBlock Text="{Binding}"
+                                                                           Margin="0,1,0,1"/>
+                                                            </DataTemplate>
+                                                        </ItemsControl.ItemTemplate>
+
+                                                    </ItemsControl>
+
+                                                    <!-- Expandable display for 6+ events -->
+                                                    <Expander
+                                                        x:Name="ExpandedEventList"
+                                                        Visibility="Collapsed">
+
+                                                        <Expander.Header>
+
+                                                            <StackPanel
+                                                                x:Name="CollapsedEventSummary">
+
+                                                                <TextBlock
+                                                                    Text="{Binding VisibleWwiseEventsText}"/>
+
+                                                                <TextBlock
+                                                                    Text="{Binding AdditionalWwiseEvents.Count, StringFormat=+ {0} more}"
+                                                                    FontStyle="Italic"/>
+
+                                                            </StackPanel>
+
+                                                        </Expander.Header>
+
+                                                        <ScrollViewer
+                                                            MaxHeight="200"
+                                                            VerticalScrollBarVisibility="Auto"
+                                                            HorizontalScrollBarVisibility="Disabled">
+
+                                                            <ItemsControl
+                                                                ItemsSource="{Binding WwiseEvents}">
+
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate>
+                                                                        <TextBlock Text="{Binding}"
+                                                                            Margin="0,1,0,1"/>
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+
+                                                            </ItemsControl>
+
+                                                        </ScrollViewer>
+
+                                                    </Expander>
+
+                                                </Grid>
+
+                                                <DataTemplate.Triggers>
+
+                                                    <!-- 6+ events: use the expandable version -->
+                                                    <DataTrigger
+                                                        Binding="{Binding HasAdditionalWwiseEvents}"
+                                                        Value="True">
+
+                                                        <Setter
+                                                            TargetName="NormalEventList"
+                                                            Property="Visibility"
+                                                            Value="Collapsed"/>
+
+                                                        <Setter
+                                                            TargetName="ExpandedEventList"
+                                                            Property="Visibility"
+                                                            Value="Visible"/>
+
+                                                    </DataTrigger>
+
+                                                    <!-- When expanded, hide the five-event preview -->
+                                                    <DataTrigger
+                                                        Binding="{Binding ElementName=ExpandedEventList, Path=IsExpanded}"
+                                                        Value="True">
+
+                                                        <Setter
+                                                            TargetName="CollapsedEventSummary"
+                                                            Property="Visibility"
+                                                            Value="Collapsed"/>
+
+                                                    </DataTrigger>
+
+                                                </DataTemplate.Triggers>
+
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+
+                                    </DataGridTemplateColumn>
+
+                                </DataGrid.Columns>
 
 							</DataGrid>
 

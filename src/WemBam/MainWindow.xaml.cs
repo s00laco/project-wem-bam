@@ -20,6 +20,8 @@ namespace WemBam
 
         private BackgroundTaskProgress? _latestProgress;
 
+        private readonly SearchEngine _searchEngine = new();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -82,6 +84,18 @@ namespace WemBam
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
+        }
+
+        private void SearchButton_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+            IReadOnlyList<SearchResult> results =
+                _searchEngine.Search(
+                    FilterTextBox.Text);
+
+            ResultsDataGrid.ItemsSource =
+                results;
         }
 
         private void BackgroundTaskManager_TaskStarted(

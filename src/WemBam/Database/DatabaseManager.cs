@@ -452,8 +452,8 @@ namespace WemBam.Database
         }
 
         public static (
-    DateTimeOffset? LastIndexed,
-    int IndexedFileCount) LoadIndexStatus()
+            DateTimeOffset? LastIndexed,
+            int IndexedFileCount) LoadIndexStatus()
         {
             using SqliteConnection connection = OpenConnection();
 
@@ -485,5 +485,341 @@ namespace WemBam.Database
                 DateTimeOffset.FromUnixTimeMilliseconds(unixMilliseconds),
                 indexedFileCount);
         }
+
+        public static IReadOnlyList<SearchResult> SearchAudioAssets(
+    string query)
+        {
+            ArgumentNullException.ThrowIfNull(query);
+
+            string trimmedQuery =
+                query.Trim();
+
+            string escapedQuery =
+                trimmedQuery
+                    .Replace("\\", "\\\\")
+                    .Replace("%", "\\%")
+                    .Replace("_", "\\_");
+
+            string searchPattern =
+                $"%{escapedQuery}%";
+
+            string prefixPattern =
+                $"{escapedQuery}%";
+
+            using SqliteConnection connection =
+                OpenConnection();
+
+            using SqliteCommand command =
+                connection.CreateCommand();
+
+            command.CommandText =
+                """
+        SELECT
+            audioAsset.FileName,
+
+            streamedFile.Path,
+
+            (
+                SELECT GROUP_CONCAT(
+                    wwiseEvent.Name,
+                    CHAR(10))
+                FROM WwiseEventToStreamedFiles relationship
+                INNER JOIN WwiseEvents wwiseEvent
+                    ON wwiseEvent.Id =
+                       relationship.WwiseEventId
+                WHERE relationship.FileId =
+                      audioAsset.FileId
+            ) AS WwiseEvents,
+
+            (
+                CASE
+                    WHEN $query = '' THEN 0
+
+                    WHEN audioAsset.FileId = $query
+                        THEN 12
+
+                    WHEN audioAsset.FileId LIKE
+                         $prefixPattern ESCAPE '\'
+                        THEN 8
+
+                    WHEN audioAsset.FileId LIKE
+                         $searchPattern ESCAPE '\'
+                        THEN 4
+
+                    ELSE 0
+                END
+
+                +
+
+                CASE
+                    WHEN $query = '' THEN 0
+
+                    WHEN audioAsset.FileName = $query
+                        THEN 9
+
+                    WHEN audioAsset.FileName LIKE
+                         $prefixPattern ESCAPE '\'
+                        THEN 6
+
+                    WHEN audioAsset.FileName LIKE
+                         $searchPattern ESCAPE '\'
+                        THEN 3
+
+                    ELSE 0
+                END
+
+                +
+
+                CASE
+                    WHEN $query = '' THEN 0
+
+                    WHEN EXISTS
+                    (
+                        SELECT 1
+                        FROM AudioAssetSources source
+                        WHERE source.AudioAssetId =
+                              audioAsset.Id
+                          AND
+                          (
+                              source.ContainerPath =
+                                  $query
+                              OR source.AssetPath =
+                                  $query
+                          )
+                    )
+                        THEN 3
+
+                    WHEN EXISTS
+                    (
+                        SELECT 1
+                        FROM AudioAssetSources source
+                        WHERE source.AudioAssetId =
+                              audioAsset.Id
+                          AND
+                          (
+                              source.ContainerPath LIKE
+                                  $prefixPattern ESCAPE '\'
+                              OR source.AssetPath LIKE
+                                  $prefixPattern ESCAPE '\'
+                          )
+                    )
+                        THEN 2
+
+                    WHEN EXISTS
+                    (
+                        SELECT 1
+                        FROM AudioAssetSources source
+                        WHERE source.AudioAssetId =
+                              audioAsset.Id
+                          AND
+                          (
+                              source.ContainerPath LIKE
+                                  $searchPattern ESCAPE '\'
+                              OR source.AssetPath LIKE
+                                  $searchPattern ESCAPE '\'
+                          )
+                    )
+                        THEN 1
+
+                    ELSE 0
+                END
+
+                +
+
+                CASE
+                    WHEN $query = '' THEN 0
+
+                    WHEN streamedFile.ShortName =
+                         $query
+                        THEN 6
+
+                    WHEN streamedFile.ShortName LIKE
+                         $prefixPattern ESCAPE '\'
+                        THEN 4
+
+                    WHEN streamedFile.ShortName LIKE
+                         $searchPattern ESCAPE '\'
+                        THEN 2
+
+                    ELSE 0
+                END
+
+                +
+
+                CASE
+                    WHEN $query = '' THEN 0
+
+                    WHEN streamedFile.Path =
+                         $query
+                        THEN 3
+
+                    WHEN streamedFile.Path LIKE
+                         $prefixPattern ESCAPE '\'
+                        THEN 2
+
+                    WHEN streamedFile.Path LIKE
+                         $searchPattern ESCAPE '\'
+                        THEN 1
+
+                    ELSE 0
+                END
+
+                +
+
+                CASE
+                    WHEN $query = '' THEN 0
+
+                    WHEN EXISTS
+                    (
+                        SELECT 1
+                        FROM WwiseEventToStreamedFiles relationship
+                        INNER JOIN WwiseEvents wwiseEvent
+                            ON wwiseEvent.Id =
+                               relationship.WwiseEventId
+                        WHERE relationship.FileId =
+                              audioAsset.FileId
+                          AND wwiseEvent.Name =
+                              $query
+                    )
+                        THEN 6
+
+                    WHEN EXISTS
+                    (
+                        SELECT 1
+                        FROM WwiseEventToStreamedFiles relationship
+                        INNER JOIN WwiseEvents wwiseEvent
+                            ON wwiseEvent.Id =
+                               relationship.WwiseEventId
+                        WHERE relationship.FileId =
+                              audioAsset.FileId
+                          AND wwiseEvent.Name LIKE
+                              $prefixPattern ESCAPE '\'
+                    )
+                        THEN 4
+
+                    WHEN EXISTS
+                    (
+                        SELECT 1
+                        FROM WwiseEventToStreamedFiles relationship
+                        INNER JOIN WwiseEvents wwiseEvent
+                            ON wwiseEvent.Id =
+                               relationship.WwiseEventId
+                        WHERE relationship.FileId =
+                              audioAsset.FileId
+                          AND wwiseEvent.Name LIKE
+                              $searchPattern ESCAPE '\'
+                    )
+                        THEN 2
+
+                    ELSE 0
+                END
+            ) AS SearchScore
+
+        FROM AudioAssets audioAsset
+
+        LEFT JOIN WwiseStreamedFiles streamedFile
+            ON streamedFile.FileId =
+               audioAsset.FileId
+
+        WHERE
+            $query = ''
+
+            OR audioAsset.FileId LIKE
+               $searchPattern ESCAPE '\'
+
+            OR audioAsset.FileName LIKE
+               $searchPattern ESCAPE '\'
+
+            OR EXISTS
+            (
+                SELECT 1
+                FROM AudioAssetSources source
+                WHERE source.AudioAssetId =
+                      audioAsset.Id
+                  AND
+                  (
+                      source.ContainerPath LIKE
+                          $searchPattern ESCAPE '\'
+                      OR source.AssetPath LIKE
+                          $searchPattern ESCAPE '\'
+                  )
+            )
+
+            OR streamedFile.ShortName LIKE
+               $searchPattern ESCAPE '\'
+
+            OR streamedFile.Path LIKE
+               $searchPattern ESCAPE '\'
+
+            OR EXISTS
+            (
+                SELECT 1
+                FROM WwiseEventToStreamedFiles relationship
+                INNER JOIN WwiseEvents wwiseEvent
+                    ON wwiseEvent.Id =
+                       relationship.WwiseEventId
+                WHERE relationship.FileId =
+                      audioAsset.FileId
+                  AND wwiseEvent.Name LIKE
+                      $searchPattern ESCAPE '\'
+            )
+
+        ORDER BY
+            SearchScore DESC,
+            audioAsset.FileName COLLATE NOCASE,
+            audioAsset.FileId;
+        """;
+
+            command.Parameters.AddWithValue(
+                "$query",
+                trimmedQuery);
+
+            command.Parameters.AddWithValue(
+                "$searchPattern",
+                searchPattern);
+
+            command.Parameters.AddWithValue(
+                "$prefixPattern",
+                prefixPattern);
+
+            List<SearchResult> results = new();
+
+            using SqliteDataReader reader =
+                command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                List<string> wwiseEvents = new();
+
+                if (!reader.IsDBNull(2))
+                {
+                    string eventText =
+                        reader.GetString(2);
+
+                    wwiseEvents.AddRange(
+                        eventText.Split(
+                            '\n',
+                            StringSplitOptions.RemoveEmptyEntries));
+                }
+
+                results.Add(
+                    new SearchResult
+                    {
+                        FileName =
+                            reader.GetString(0),
+
+                        WwisePath =
+                            reader.IsDBNull(1)
+                                ? string.Empty
+                                : reader.GetString(1),
+
+                        WwiseEvents =
+                            wwiseEvents
+                    });
+            }
+
+            return results;
+        }
+
     }
 }
