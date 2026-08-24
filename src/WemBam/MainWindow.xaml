@@ -245,26 +245,27 @@
                                 </Grid.ColumnDefinitions>
 
                                 <Label Grid.Column="0"
-           Content="Filter"
-           VerticalAlignment="Center"
-           Padding="0"/>
+                                       Content="Filter"
+                                       VerticalAlignment="Center"
+                                       Padding="0"/>
 
                                 <TextBox x:Name="FilterTextBox"
-             Grid.Column="2"
-             VerticalAlignment="Center"
-             MinWidth="150"/>
+                                         Grid.Column="2"
+                                         VerticalAlignment="Center"
+                                         MinWidth="150"
+                                         KeyDown="FilterTextBox_KeyDown"/>
 
                                 <Button x:Name="SearchButton"
-            Grid.Column="4"
-            Content="Search"
-            Width="80"
-            Click="SearchButton_Click"/>
+                                        Grid.Column="4"
+                                        Content="Search"
+                                        Width="80"
+                                        Click="SearchButton_Click"/>
 
                             </Grid>
 
                             <!-- Results -->
                             <DataGrid x:Name="ResultsDataGrid"
-									  Grid.Row="2"
+                                      Grid.Row="2"
                                       MinWidth="450"
                                       AutoGenerateColumns="False"
                                       CanUserAddRows="False"
@@ -272,15 +273,251 @@
                                       IsReadOnly="True"
                                       HeadersVisibility="Column">
 
-								<DataGrid.Columns>
+                                <DataGrid.Resources>
 
-                                    <DataGridTextColumn Header="Filename"
-														Binding="{Binding FileName}"
-														Width="1*"/>
+                                    <Style TargetType="ScrollBar">
 
-                                    <DataGridTextColumn Header="Wwise Path"
-														Binding="{Binding WwisePath}"
-														Width="4*"/>
+                                        <Setter Property="Width"
+                                                Value="8"/>
+
+                                        <Setter Property="Template">
+
+                                            <Setter.Value>
+
+                                                <ControlTemplate TargetType="ScrollBar">
+
+                                                    <Grid Background="Transparent">
+
+                                                        <Track
+                                                            x:Name="PART_Track"
+                                                            Focusable="False"
+                                                            IsDirectionReversed="True"
+                                                            Width="6"
+                                                            HorizontalAlignment="Center">
+
+                                                            <Track.DecreaseRepeatButton>
+
+                                                                <RepeatButton
+                                                                    x:Name="DecreaseButton"
+                                                                    CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                                                    Background="Transparent"
+                                                                    BorderThickness="0"
+                                                                    Opacity="0"/>
+
+                                                            </Track.DecreaseRepeatButton>
+
+                                                            <Track.Thumb>
+
+                                                                <Thumb
+                                                                    x:Name="Thumb"
+                                                                    Width="6"
+                                                                    Background="#808080"
+                                                                    BorderThickness="0"
+                                                                    Opacity="0.8"
+                                                                    HorizontalAlignment="Center">
+
+                                                                    <Thumb.Template>
+
+                                                                        <ControlTemplate TargetType="Thumb">
+
+                                                                            <Border
+                                                                                Background="{TemplateBinding Background}"
+                                                                                CornerRadius="3"/>
+
+                                                                        </ControlTemplate>
+
+                                                                    </Thumb.Template>
+
+                                                                </Thumb>
+
+                                                            </Track.Thumb>
+
+                                                            <Track.IncreaseRepeatButton>
+
+                                                                <RepeatButton
+                                                                    x:Name="IncreaseButton"
+                                                                    CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                                                    Background="Transparent"
+                                                                    BorderThickness="0"
+                                                                    Opacity="0"/>
+
+                                                            </Track.IncreaseRepeatButton>
+
+                                                        </Track>
+
+                                                    </Grid>
+
+                                                    <ControlTemplate.Triggers>
+
+                                                        <Trigger
+                                                            Property="Orientation"
+                                                            Value="Vertical">
+
+                                                            <Setter
+                                                                TargetName="PART_Track"
+                                                                Property="Orientation"
+                                                                Value="Vertical"/>
+
+                                                            <Setter
+                                                                TargetName="DecreaseButton"
+                                                                Property="Command"
+                                                                Value="ScrollBar.LineUpCommand"/>
+
+                                                            <Setter
+                                                                TargetName="IncreaseButton"
+                                                                Property="Command"
+                                                                Value="ScrollBar.LineDownCommand"/>
+
+                                                        </Trigger>
+
+                                                        <Trigger
+                                                            Property="Orientation"
+                                                            Value="Horizontal">
+
+                                                            <Setter
+                                                                TargetName="PART_Track"
+                                                                Property="Orientation"
+                                                                Value="Horizontal"/>
+
+                                                            <Setter
+                                                                TargetName="DecreaseButton"
+                                                                Property="Command"
+                                                                Value="ScrollBar.LineLeftCommand"/>
+
+                                                            <Setter
+                                                                TargetName="IncreaseButton"
+                                                                Property="Command"
+                                                                Value="ScrollBar.LineRightCommand"/>
+
+                                                        </Trigger>
+
+                                                    </ControlTemplate.Triggers>
+
+                                                </ControlTemplate>
+
+                                            </Setter.Value>
+
+                                        </Setter>
+
+                                    </Style>
+
+                                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"
+                                                     Color="#a0a0a0"/>
+
+                                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}"
+                                                     Color="White"/>
+
+                                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}"
+                                                     Color="#a0a0a0"/>
+
+                                    <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}"
+                                                     Color="White"/>
+
+                                </DataGrid.Resources>
+
+                                <DataGrid.Columns>
+
+                                    <DataGridTemplateColumn Header="Filename"
+                                                            Width="1*">
+
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+
+                                                <TextBox
+                                                    Text="{Binding FileName}"
+                                                    IsReadOnly="True"
+                                                    BorderThickness="0"
+                                                    Background="Transparent"
+                                                    Padding="0"
+                                                    HorizontalScrollBarVisibility="Hidden"
+                                                    VerticalScrollBarVisibility="Hidden"
+                                                    IsTabStop="False">
+
+                                                    <TextBox.Style>
+                                                        <Style TargetType="TextBox">
+
+                                                            <Setter Property="Foreground"
+                                                                    Value="Black"/>
+
+                                                            <Setter Property="FontWeight"
+                                                                    Value="Normal"/>
+
+                                                            <Style.Triggers>
+
+                                                                <DataTrigger
+                                                                    Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected}"
+                                                                    Value="True">
+
+                                                                    <Setter Property="Foreground"
+                                                                            Value="White"/>
+
+                                                                    <Setter Property="FontWeight"
+                                                                            Value="SemiBold"/>
+
+                                                                </DataTrigger>
+
+                                                            </Style.Triggers>
+
+                                                        </Style>
+                                                    </TextBox.Style>
+
+                                                </TextBox>
+
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn Header="Wwise Path"
+                                                            Width="4*">
+
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+
+                                                <TextBox
+                                                    Text="{Binding WwisePath}"
+                                                    IsReadOnly="True"
+                                                    BorderThickness="0"
+                                                    Background="Transparent"
+                                                    Padding="0"
+                                                    HorizontalScrollBarVisibility="Hidden"
+                                                    VerticalScrollBarVisibility="Hidden"
+                                                    IsTabStop="False">
+
+                                                    <TextBox.Style>
+                                                        <Style TargetType="TextBox">
+
+                                                            <Setter Property="Foreground"
+                                                                    Value="Black"/>
+
+                                                            <Setter Property="FontWeight"
+                                                                    Value="Normal"/>
+
+                                                            <Style.Triggers>
+
+                                                                <DataTrigger
+                                                                    Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected}"
+                                                                    Value="True">
+
+                                                                    <Setter Property="Foreground"
+                                                                            Value="White"/>
+
+                                                                    <Setter Property="FontWeight"
+                                                                            Value="SemiBold"/>
+
+                                                                </DataTrigger>
+
+                                                            </Style.Triggers>
+
+                                                        </Style>
+                                                    </TextBox.Style>
+
+                                                </TextBox>
+
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+
+                                    </DataGridTemplateColumn>
 
                                     <DataGridTemplateColumn Header="Wwise Events"
                                                             Width="2*">
@@ -297,8 +534,46 @@
 
                                                         <ItemsControl.ItemTemplate>
                                                             <DataTemplate>
-                                                                <TextBlock Text="{Binding}"
-                                                                           Margin="0,1,0,1"/>
+                                                                <TextBox
+                                                                    Text="{Binding Mode=OneWay}"
+                                                                    IsReadOnly="True"
+                                                                    BorderThickness="0"
+                                                                    Background="Transparent"
+                                                                    Padding="0"
+                                                                    Margin="0,1,0,1"
+                                                                    HorizontalScrollBarVisibility="Hidden"
+                                                                    VerticalScrollBarVisibility="Hidden"
+                                                                    IsTabStop="False">
+
+                                                                    <TextBox.Style>
+                                                                        <Style TargetType="TextBox">
+
+                                                                            <Setter Property="Foreground"
+                                                                                    Value="Black"/>
+
+                                                                            <Setter Property="FontWeight"
+                                                                                    Value="Normal"/>
+
+                                                                            <Style.Triggers>
+
+                                                                                <DataTrigger
+                                                                                    Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected}"
+                                                                                    Value="True">
+
+                                                                                    <Setter Property="Foreground"
+                                                                                            Value="White"/>
+
+                                                                                    <Setter Property="FontWeight"
+                                                                                            Value="SemiBold"/>
+
+                                                                                </DataTrigger>
+
+                                                                            </Style.Triggers>
+
+                                                                        </Style>
+                                                                    </TextBox.Style>
+
+                                                                </TextBox>
                                                             </DataTemplate>
                                                         </ItemsControl.ItemTemplate>
 
@@ -309,17 +584,184 @@
                                                         x:Name="ExpandedEventList"
                                                         Visibility="Collapsed">
 
+                                                        <Expander.Style>
+                                                            <Style TargetType="Expander">
+
+                                                                <Setter Property="Template">
+                                                                    <Setter.Value>
+
+                                                                        <ControlTemplate TargetType="Expander">
+
+                                                                            <Grid>
+
+                                                                                <Grid.RowDefinitions>
+                                                                                    <RowDefinition Height="Auto"/>
+                                                                                    <RowDefinition Height="*"/>
+                                                                                </Grid.RowDefinitions>
+
+                                                                                <!-- Header / chevron -->
+                                                                                <ToggleButton
+                                                                                    x:Name="HeaderSite"
+                                                                                    Grid.Row="0"
+                                                                                    IsChecked="{Binding IsExpanded,
+                                                                                                        RelativeSource={RelativeSource TemplatedParent},
+                                                                                                        Mode=TwoWay}"
+                                                                                    Background="Transparent"
+                                                                                    BorderThickness="0"
+                                                                                    Padding="0"
+                                                                                    FocusVisualStyle="{x:Null}"
+                                                                                    HorizontalContentAlignment="Stretch">
+
+                                                                                    <ToggleButton.Template>
+                                                                                        <ControlTemplate TargetType="ToggleButton">
+
+                                                                                            <Border
+                                                                                                Background="{TemplateBinding Background}"
+                                                                                                Padding="{TemplateBinding Padding}">
+
+                                                                                                <ContentPresenter/>
+
+                                                                                            </Border>
+
+                                                                                        </ControlTemplate>
+                                                                                    </ToggleButton.Template>
+
+                                                                                    <Grid>
+
+                                                                                        <Grid.ColumnDefinitions>
+                                                                                            <ColumnDefinition Width="20"/>
+                                                                                            <ColumnDefinition Width="*"/>
+                                                                                        </Grid.ColumnDefinitions>
+
+                                                                                        <TextBlock
+                                                                                            x:Name="Chevron"
+                                                                                            Grid.Column="0"
+                                                                                            Text="^"
+                                                                                            FontSize="14"
+                                                                                            FontWeight="SemiBold"
+                                                                                            Foreground="Black"
+                                                                                            VerticalAlignment="Top"
+                                                                                            HorizontalAlignment="Center"
+                                                                                            Margin="0,0,2,0"/>
+
+                                                                                        <ContentPresenter
+                                                                                            Grid.Column="1"
+                                                                                            Content="{TemplateBinding Header}"
+                                                                                            VerticalAlignment="Center"/>
+
+                                                                                    </Grid>
+
+                                                                                </ToggleButton>
+
+                                                                                <!-- Expanded full Event list -->
+                                                                                <ContentPresenter
+                                                                                    x:Name="ExpandSite"
+                                                                                    Grid.Row="1"
+                                                                                    Content="{TemplateBinding Content}"
+                                                                                    Margin="20,0,0,0"
+                                                                                    Visibility="Collapsed"/>
+
+                                                                            </Grid>
+
+                                                                            <ControlTemplate.Triggers>
+
+                                                                                <DataTrigger
+                                                                                    Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected}"
+                                                                                    Value="True">
+
+                                                                                    <Setter
+                                                                                        TargetName="Chevron"
+                                                                                        Property="Foreground"
+                                                                                        Value="White"/>
+
+                                                                                </DataTrigger>
+
+                                                                                <Trigger
+                                                                                    Property="IsExpanded"
+                                                                                    Value="True">
+
+                                                                                    <Setter
+                                                                                        TargetName="ExpandSite"
+                                                                                        Property="Visibility"
+                                                                                        Value="Visible"/>
+
+                                                                                    <Setter
+                                                                                        TargetName="Chevron"
+                                                                                        Property="Text"
+                                                                                        Value="⌄"/>
+
+                                                                                    <Setter
+                                                                                        TargetName="Chevron"
+                                                                                        Property="FontSize"
+                                                                                        Value="12"/>
+
+                                                                                </Trigger>
+
+                                                                            </ControlTemplate.Triggers>
+
+                                                                        </ControlTemplate>
+
+                                                                    </Setter.Value>
+                                                                </Setter>
+
+                                                            </Style>
+                                                        </Expander.Style>
+
                                                         <Expander.Header>
 
                                                             <StackPanel
                                                                 x:Name="CollapsedEventSummary">
 
                                                                 <TextBlock
-                                                                    Text="{Binding VisibleWwiseEventsText}"/>
+                                                                    Text="{Binding VisibleWwiseEventsText}">
+                                                                    <TextBlock.Style>
+                                                                        <Style TargetType="TextBlock">
+                                                                            <Setter Property="Foreground"
+                                                                                    Value="Black"/>
+
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger
+                                                                                    Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected}"
+                                                                                    Value="True">
+
+                                                                                    <Setter Property="Foreground"
+                                                                                            Value="White"/>
+
+                                                                                    <Setter Property="FontWeight"
+                                                                                            Value="SemiBold"/>
+
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </TextBlock.Style>
+                                                                </TextBlock>
 
                                                                 <TextBlock
                                                                     Text="{Binding AdditionalWwiseEvents.Count, StringFormat=+ {0} more}"
-                                                                    FontStyle="Italic"/>
+                                                                    FontStyle="Italic">
+
+                                                                    <TextBlock.Style>
+                                                                        <Style TargetType="TextBlock">
+                                                                            <Setter Property="Foreground"
+                                                                                    Value="Black"/>
+
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger
+                                                                                    Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected}"
+                                                                                    Value="True">
+
+                                                                                    <Setter Property="Foreground"
+                                                                                            Value="White"/>
+
+                                                                                    <Setter Property="FontWeight"
+                                                                                            Value="SemiBold"/>
+
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </TextBlock.Style>
+
+                                                                </TextBlock>
 
                                                             </StackPanel>
 
@@ -330,13 +772,183 @@
                                                             VerticalScrollBarVisibility="Auto"
                                                             HorizontalScrollBarVisibility="Disabled">
 
+                                                            <ScrollViewer.Resources>
+
+                                                                <Style TargetType="ScrollBar">
+
+                                                                    <Setter Property="Width"
+                                                                            Value="8"/>
+
+                                                                    <Setter Property="Template">
+
+                                                                        <Setter.Value>
+
+                                                                            <ControlTemplate TargetType="ScrollBar">
+
+                                                                                <Grid Background="Transparent">
+
+                                                                                    <Track
+                                                                                        x:Name="PART_Track"
+                                                                                        Focusable="False"
+                                                                                        IsDirectionReversed="True"
+                                                                                        Width="6"
+                                                                                        HorizontalAlignment="Center">
+
+                                                                                        <Track.DecreaseRepeatButton>
+
+                                                                                            <RepeatButton
+                                                                                                x:Name="DecreaseButton"
+                                                                                                CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                                                                                Background="Transparent"
+                                                                                                BorderThickness="0"
+                                                                                                Opacity="0"/>
+
+                                                                                        </Track.DecreaseRepeatButton>
+
+                                                                                        <Track.Thumb>
+
+                                                                                            <Thumb
+                                                                                                x:Name="Thumb"
+                                                                                                Width="6"
+                                                                                                Background="#808080"
+                                                                                                BorderThickness="0"
+                                                                                                Opacity="0.8"
+                                                                                                HorizontalAlignment="Center">
+
+                                                                                                <Thumb.Template>
+
+                                                                                                    <ControlTemplate TargetType="Thumb">
+
+                                                                                                        <Border
+                                                                                                            Background="{TemplateBinding Background}"
+                                                                                                            CornerRadius="3"/>
+
+                                                                                                    </ControlTemplate>
+
+                                                                                                </Thumb.Template>
+
+                                                                                            </Thumb>
+
+                                                                                        </Track.Thumb>
+
+                                                                                        <Track.IncreaseRepeatButton>
+
+                                                                                            <RepeatButton
+                                                                                                x:Name="IncreaseButton"
+                                                                                                CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                                                                                                Background="Transparent"
+                                                                                                BorderThickness="0"
+                                                                                                Opacity="0"/>
+
+                                                                                        </Track.IncreaseRepeatButton>
+
+                                                                                    </Track>
+
+                                                                                </Grid>
+
+                                                                                <ControlTemplate.Triggers>
+
+                                                                                    <Trigger
+                                                                                        Property="Orientation"
+                                                                                        Value="Vertical">
+
+                                                                                        <Setter
+                                                                                            TargetName="PART_Track"
+                                                                                            Property="Orientation"
+                                                                                            Value="Vertical"/>
+
+                                                                                        <Setter
+                                                                                            TargetName="DecreaseButton"
+                                                                                            Property="Command"
+                                                                                            Value="ScrollBar.LineUpCommand"/>
+
+                                                                                        <Setter
+                                                                                            TargetName="IncreaseButton"
+                                                                                            Property="Command"
+                                                                                            Value="ScrollBar.LineDownCommand"/>
+
+                                                                                    </Trigger>
+
+                                                                                    <Trigger
+                                                                                        Property="Orientation"
+                                                                                        Value="Horizontal">
+
+                                                                                        <Setter
+                                                                                            TargetName="PART_Track"
+                                                                                            Property="Orientation"
+                                                                                            Value="Horizontal"/>
+
+                                                                                        <Setter
+                                                                                            TargetName="DecreaseButton"
+                                                                                            Property="Command"
+                                                                                            Value="ScrollBar.LineLeftCommand"/>
+
+                                                                                        <Setter
+                                                                                            TargetName="IncreaseButton"
+                                                                                            Property="Command"
+                                                                                            Value="ScrollBar.LineRightCommand"/>
+
+                                                                                    </Trigger>
+
+                                                                                </ControlTemplate.Triggers>
+
+                                                                            </ControlTemplate>
+
+                                                                        </Setter.Value>
+
+                                                                    </Setter>
+
+                                                                </Style>
+
+                                                            </ScrollViewer.Resources>
+
                                                             <ItemsControl
                                                                 ItemsSource="{Binding WwiseEvents}">
 
                                                                 <ItemsControl.ItemTemplate>
                                                                     <DataTemplate>
-                                                                        <TextBlock Text="{Binding}"
-                                                                            Margin="0,1,0,1"/>
+
+                                                                        <TextBox
+                                                                            Text="{Binding Mode=OneWay}"
+                                                                            IsReadOnly="True"
+                                                                            BorderThickness="0"
+                                                                            Background="Transparent"
+                                                                            Padding="0"
+                                                                            Margin="0,1,0,1"
+                                                                            HorizontalScrollBarVisibility="Hidden"
+                                                                            VerticalScrollBarVisibility="Hidden"
+                                                                            IsTabStop="False">
+
+                                                                            <TextBox.Style>
+                                                                                <Style TargetType="TextBox">
+
+                                                                                    <Setter Property="Foreground"
+                                                                                            Value="Black"/>
+
+                                                                                    <Setter Property="FontWeight"
+                                                                                            Value="Normal"/>
+
+                                                                                    <Style.Triggers>
+
+                                                                                        <DataTrigger
+                                                                                            Binding="{Binding RelativeSource={RelativeSource AncestorType=DataGridRow}, Path=IsSelected}"
+                                                                                            Value="True">
+
+                                                                                            <Setter Property="Foreground"
+                                                                                                    Value="White"/>
+
+                                                                                            <Setter Property="FontWeight"
+                                                                                                    Value="SemiBold"/>
+
+                                                                                        </DataTrigger>
+
+                                                                                    </Style.Triggers>
+
+                                                                                </Style>
+                                                                            </TextBox.Style>
+
+                                                                        </TextBox>
+
                                                                     </DataTemplate>
                                                                 </ItemsControl.ItemTemplate>
 

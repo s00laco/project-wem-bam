@@ -98,6 +98,22 @@ namespace WemBam
                 results;
         }
 
+        private void FilterTextBox_KeyDown(
+    object sender,
+    System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key != System.Windows.Input.Key.Enter)
+            {
+                return;
+            }
+
+            SearchButton_Click(
+                SearchButton,
+                new RoutedEventArgs());
+
+            e.Handled = true;
+        }
+
         private void BackgroundTaskManager_TaskStarted(
             object? sender,
             EventArgs e)

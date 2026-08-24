@@ -478,6 +478,34 @@ The log viewer should be read-only and should not allow editing of log files.
 
 # Indexing
 
+
+## Non-Destructive Indexing and Explicit Index Clearing
+
+**Status:** Future
+
+Indexing should be non-destructive.
+
+A normal indexing operation should never clear or remove existing indexed audio data before rebuilding the index. It should instead add or update discovered audio assets and physical sources as appropriate.
+
+This ensures that cancelling an indexing operation cannot leave the database in a partially rebuilt state.
+
+The user should have explicit control over when the index is purged through a separate **Clear Index** action.
+
+Possible behaviour:
+
+- **Index Sources** performs a non-destructive/incremental index.
+- Cancelling an indexing operation leaves all previously indexed data intact.
+- Newly discovered files are added.
+- Existing indexed files are updated as appropriate.
+- A separate **Clear Index** button allows the user to deliberately remove the indexed audio data.
+- Clearing the index should require explicit user action and appropriate confirmation.
+
+The purpose is to make indexing inherently safe while keeping destructive index clearing available when the user actually wants to start over.
+
+This should be designed around the existing logical `AudioAsset` / physical `AudioAssetSource` model rather than restoring the previous destructive indexing behaviour.
+
+The exact update/reconciliation behaviour for sources that have been removed or changed can be defined when this improvement is implemented.
+
 ## Warn about overlapping folder sources
 
 Warn when one configured source is already contained within another configured source.
