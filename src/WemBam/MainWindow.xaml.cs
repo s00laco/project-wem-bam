@@ -1,10 +1,16 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Threading;
+using NAudio.Wave;
+using WemBam.Contracts;
 using WemBam.Logging;
 using WemBam.Models;
 using WemBam.Services;
+using WemBam.Services.Audio;
+using WemBam.Services.Audio.Interop;
+using WemBam.Services.Audio.Playback;
 
 namespace WemBam
 {
@@ -21,6 +27,20 @@ namespace WemBam
         private BackgroundTaskProgress? _latestProgress;
 
         private readonly SearchEngine _searchEngine = new();
+
+        private WaveOutEvent? _currentOutput;
+
+        private Stream? _currentStream;
+
+        private LibVgmStream? _currentDecoder;
+
+        private VgmStreamWaveProvider? _currentWaveProvider;
+
+        private SearchResult? _currentlyPlayingResult;
+
+        private SearchResult? _lastPlayedResult;
+
+        private bool _isStoppingPlayback;
 
         public MainWindow()
         {
@@ -112,6 +132,243 @@ namespace WemBam
                 new RoutedEventArgs());
 
             e.Handled = true;
+        }
+
+        private void CurrentOutput_PlaybackStopped(
+                object? sender,
+                StoppedEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (_isStoppingPlayback ||
+                    sender is not WaveOutEvent output ||
+                    !ReferenceEquals(output, _currentOutput) ||
+                    _currentlyPlayingResult is null)
+                {
+                    return;
+                }
+
+                _currentlyPlayingResult.IsPlaying = false;
+
+                _currentOutput = null;
+                _currentWaveProvider = null;
+                _currentDecoder?.Dispose();
+                _currentDecoder = null;
+                _currentStream?.Dispose();
+                _currentStream = null;
+                _currentlyPlayingResult = null;
+            });
+        }
+
+        private void MainPlayPauseButton_Click(
+                object sender,
+                RoutedEventArgs e)
+        {
+            if (_currentOutput is not null &&
+                _currentlyPlayingResult is not null)
+            {
+                if (_currentOutput.PlaybackState == PlaybackState.Playing)
+                {
+                    _currentOutput.Pause();
+                    _currentlyPlayingResult.IsPlaying = false;
+                }
+                else if (_currentOutput.PlaybackState == PlaybackState.Paused)
+                {
+                    _currentOutput.Play();
+                    _currentlyPlayingResult.IsPlaying = true;
+                }
+
+                return;
+            }
+
+            if (_lastPlayedResult is null)
+            {
+                return;
+            }
+
+            SearchResult result = _lastPlayedResult;
+
+            AudioStreamRequest request = new()
+            {
+                SourceType = SourceType.File,
+                ContainerPath = result.ContainerPath,
+                AssetPath = result.AssetPath
+            };
+
+            IAudioStreamProvider streamProvider =
+                AudioStreamProviderFactory.Create(request);
+
+            Stream stream =
+                streamProvider.OpenStream(request);
+
+            LibVgmStream decoder =
+                new(
+                    stream,
+                    result.FileName);
+
+            VgmStreamWaveProvider waveProvider =
+                new(decoder);
+
+            WaveOutEvent output =
+                new();
+
+            output.PlaybackStopped += CurrentOutput_PlaybackStopped;
+
+            output.Init(waveProvider);
+            output.Play();
+
+            _currentStream = stream;
+            _currentDecoder = decoder;
+            _currentWaveProvider = waveProvider;
+            _currentOutput = output;
+            _currentlyPlayingResult = result;
+            _lastPlayedResult = result;
+
+            result.IsPlaying = true;
+        }
+
+        private void StopButton_Click(
+                object sender,
+                RoutedEventArgs e)
+        {
+            if (_currentOutput is null)
+            {
+                return;
+            }
+
+            _isStoppingPlayback = true;
+
+            if (_currentlyPlayingResult is not null)
+            {
+                _currentlyPlayingResult.IsPlaying = false;
+            }
+
+            _currentOutput.Stop();
+            _currentOutput.Dispose();
+
+            _isStoppingPlayback = false;
+
+            _currentOutput = null;
+            _currentWaveProvider = null;
+
+            _currentDecoder?.Dispose();
+            _currentDecoder = null;
+
+            _currentStream?.Dispose();
+            _currentStream = null;
+
+            _currentlyPlayingResult = null;
+        }
+
+        private void PlayButton_Click(
+            object sender,
+            RoutedEventArgs e)
+        {
+
+            if (sender is not System.Windows.Controls.Button button ||
+                button.DataContext is not SearchResult result)
+            {
+                return;
+            }
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(result.AssetPath))
+                {
+                    return;
+                }
+
+                if (_currentlyPlayingResult == result &&
+                    _currentOutput is not null)
+                {
+                    if (_currentOutput.PlaybackState == PlaybackState.Playing)
+                    {
+                        _currentOutput.Pause();
+                        result.IsPlaying = false;
+                    }
+                    else if (_currentOutput.PlaybackState == PlaybackState.Paused)
+                    {
+                        _currentOutput.Play();
+                        result.IsPlaying = true;
+                    }
+
+                    return;
+                }
+
+                _isStoppingPlayback = true;
+
+                if (_currentlyPlayingResult is not null)
+                {
+                    _currentlyPlayingResult.IsPlaying = false;
+                }
+
+                _currentOutput?.Stop();
+                _currentOutput?.Dispose();
+
+                _isStoppingPlayback = false;
+
+                _currentOutput = null;
+
+                _currentDecoder?.Dispose();
+                _currentDecoder = null;
+
+                _currentStream?.Dispose();
+                _currentStream = null;
+
+                _currentWaveProvider = null;
+                _currentlyPlayingResult = null;
+
+                AudioStreamRequest request = new()
+                {
+                    SourceType = SourceType.File,
+                    ContainerPath = result.ContainerPath,
+                    AssetPath = result.AssetPath
+                };
+
+                IAudioStreamProvider streamProvider =
+                    AudioStreamProviderFactory.Create(request);
+
+                Stream stream =
+                    streamProvider.OpenStream(request);
+
+                LibVgmStream decoder =
+                    new(
+                        stream,
+                        result.FileName);
+
+                VgmStreamWaveProvider waveProvider =
+                    new(decoder);
+
+                WaveOutEvent output =
+                    new();
+
+                output.PlaybackStopped += CurrentOutput_PlaybackStopped;
+
+                output.Init(waveProvider);
+                output.Play();
+
+                _currentStream = stream;
+                _currentDecoder = decoder;
+                _currentWaveProvider = waveProvider;
+                _currentOutput = output;
+                _currentlyPlayingResult = result;
+                _lastPlayedResult = result;
+
+                result.IsPlaying = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(
+                    ex,
+                    "Failed to play audio asset.");
+
+                MessageBox.Show(
+                    "Wem Bam was unable to play the selected audio asset.",
+                    "Playback Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+
         }
 
         private void BackgroundTaskManager_TaskStarted(

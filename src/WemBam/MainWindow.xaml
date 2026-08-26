@@ -115,14 +115,16 @@
 
 					<Button Content="Play / Pause"
                             Margin="0,0,6,0"
-                            MinWidth="95"/>
+                            MinWidth="95"
+                            Click="MainPlayPauseButton_Click"/>
 
 					<Button Content="Next"
                             Margin="0,0,6,0"
                             MinWidth="60"/>
 
 					<Button Content="Stop"
-                            MinWidth="60"/>
+                            MinWidth="60"
+                            Click="StopButton_Click"/>
 
 				</StackPanel>
 
@@ -416,6 +418,42 @@
                                 </DataGrid.Resources>
 
                                 <DataGrid.Columns>
+
+                                    <DataGridTemplateColumn
+                                        Header=""
+                                        Width="36">
+
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+
+                                                <Button
+                                                    Width="28"
+                                                    Height="24"
+                                                    Padding="0"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    Click="PlayButton_Click">
+
+                                                    <Button.Style>
+                                                        <Style TargetType="Button">
+                                                            <Setter Property="Content" Value="▶"/>
+
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsPlaying}" Value="True">
+                                                                    <Setter Property="Content" Value="Ⅱ"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Button.Style>
+
+                                                </Button>
+
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+
+                                    </DataGridTemplateColumn>
 
                                     <DataGridTemplateColumn Header="Filename"
                                                             Width="1*">

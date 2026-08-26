@@ -713,9 +713,17 @@ namespace WemBam.Database
 
                     ELSE 0
                 END
-            ) AS SearchScore
+            ) AS SearchScore,
+
+            defaultSource.ContainerPath,
+
+            defaultSource.AssetPath
 
         FROM AudioAssets audioAsset
+
+        LEFT JOIN AudioAssetSources defaultSource
+            ON defaultSource.Id =
+               audioAsset.DefaultSourceId
 
         LEFT JOIN WwiseStreamedFiles streamedFile
             ON streamedFile.FileId =
@@ -814,7 +822,17 @@ namespace WemBam.Database
                                 : reader.GetString(1),
 
                         WwiseEvents =
-                            wwiseEvents
+                            wwiseEvents,
+
+                        ContainerPath =
+                            reader.IsDBNull(4)
+                                ? null
+                                : reader.GetString(4),
+
+                        AssetPath =
+                            reader.IsDBNull(5)
+                                ? string.Empty
+                                : reader.GetString(5)
                     });
             }
 
