@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Threading;
 using NAudio.Wave;
 using WemBam.Contracts;
+using WemBam.Database;
 using WemBam.Logging;
 using WemBam.Models;
 using WemBam.Services;
@@ -27,6 +28,11 @@ namespace WemBam
         private BackgroundTaskProgress? _latestProgress;
 
         private readonly SearchEngine _searchEngine = new();
+
+        private IReadOnlyList<Collection> _collections =
+            Array.Empty<Collection>();
+
+        private long? _selectedCollectionId;
 
         private WaveOutEvent? _currentOutput;
 
@@ -62,6 +68,239 @@ namespace WemBam
                 ElapsedTimer_Tick;
 
             ResetBackgroundTaskDisplay();
+
+            LoadCollections();
+        }
+
+        private void LoadCollections()
+        {
+            long? previouslySelectedCollectionId =
+                _selectedCollectionId;
+
+            _collections = DatabaseManager.GetCollections();
+
+            CollectionsTreeView.Items.Clear();
+
+            System.Windows.Controls.TreeViewItem allSoundsItem =
+                new()
+                {
+                    Header = "All Sounds",
+                    Tag = null,
+                    IsSelected = previouslySelectedCollectionId is null
+                };
+
+            CollectionsTreeView.Items.Add(allSoundsItem);
+
+            CollectionsTreeView.Items.Add(
+                new System.Windows.Controls.TreeViewItem
+                {
+                    Header = "Favourites",
+                    Tag = null,
+                    IsEnabled = false
+                });
+
+            foreach (Collection collection in _collections)
+            {
+                System.Windows.Controls.TreeViewItem item =
+                    new()
+                    {
+                        Header = collection.Name,
+                        Tag = collection.Id,
+                        IsSelected =
+                            previouslySelectedCollectionId == collection.Id
+                    };
+
+                CollectionsTreeView.Items.Add(item);
+            }
+        }
+
+        private void NewCollectionButton_Click(
+                object sender,
+                RoutedEventArgs e)
+        {
+            CollectionNameDialog dialog = new()
+            {
+                Owner = this
+            };
+
+            if (dialog.ShowDialog() != true)
+            {
+                return;
+            }
+
+            long collectionId =
+                DatabaseManager.AddCollection(
+                    dialog.CollectionName);
+
+            LoadCollections();
+
+            foreach (System.Windows.Controls.TreeViewItem item
+                     in CollectionsTreeView.Items)
+            {
+                if (item.Tag is long id &&
+                    id == collectionId)
+                {
+                    item.IsSelected = true;
+                    break;
+                }
+            }
+        }
+
+        private void RenameCollectionButton_Click(
+                object sender,
+                RoutedEventArgs e)
+        {
+            if (_selectedCollectionId is not long collectionId)
+            {
+                return;
+            }
+
+            Collection? collection =
+                _collections.FirstOrDefault(
+                    item => item.Id == collectionId);
+
+            if (collection is null)
+            {
+                return;
+            }
+
+            CollectionNameDialog dialog =
+                new(
+                    collection.Name,
+                    "Rename Collection")
+                {
+                    Owner = this
+                };
+
+            if (dialog.ShowDialog() != true)
+            {
+                return;
+            }
+
+            DatabaseManager.RenameCollection(
+                collectionId,
+                dialog.CollectionName);
+
+            LoadCollections();
+
+            foreach (System.Windows.Controls.TreeViewItem item
+                     in CollectionsTreeView.Items)
+            {
+                if (item.Tag is long id &&
+                    id == collectionId)
+                {
+                    item.IsSelected = true;
+                    break;
+                }
+            }
+        }
+
+        private void DeleteCollectionButton_Click(
+                object sender,
+                RoutedEventArgs e)
+        {
+            if (_selectedCollectionId is not long collectionId)
+            {
+                return;
+            }
+
+            Collection? collection =
+                _collections.FirstOrDefault(
+                    item => item.Id == collectionId);
+
+            if (collection is null)
+            {
+                return;
+            }
+
+            MessageBoxResult confirmation =
+                MessageBox.Show(
+                    $"Delete the collection \"{collection.Name}\"?",
+                    "Delete Collection",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+            if (confirmation != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            bool wasSelectedCollection =
+                _selectedCollectionId == collectionId;
+
+            DatabaseManager.DeleteCollection(
+                collectionId);
+
+            _selectedCollectionId = null;
+
+            LoadCollections();
+
+            if (wasSelectedCollection)
+            {
+                return;
+            }
+        }
+
+        private void CollectionsButton_Click(
+                object sender,
+                RoutedEventArgs e)
+        {
+            if (sender is not System.Windows.Controls.Button button ||
+                button.DataContext is not SearchResult result)
+            {
+                return;
+            }
+
+            CollectionMembershipDialog dialog =
+                new(result.AudioAssetId)
+    {
+        Owner = this
+    };
+
+            if (dialog.ShowDialog() == true)
+            {
+                LoadCollections();
+
+                IReadOnlyList<SearchResult> results =
+                    _searchEngine.Search(
+                        FilterTextBox.Text,
+                        _selectedCollectionId);
+
+                ResultsDataGrid.ItemsSource =
+                    results;
+            }
+        }
+
+        private void CollectionsTreeView_SelectedItemChanged(
+                object sender,
+                RoutedPropertyChangedEventArgs<object> e)
+        {
+            if (e.NewValue is not System.Windows.Controls.TreeViewItem item)
+            {
+                return;
+            }
+
+            if (item.Header is string header &&
+                header == "All Sounds")
+            {
+                _selectedCollectionId = null;
+            }
+            else if (item.Tag is long collectionId)
+            {
+                _selectedCollectionId = collectionId;
+            }
+            else
+            {
+                return;
+            }
+
+            IReadOnlyList<SearchResult> results =
+                _searchEngine.Search(
+                    FilterTextBox.Text,
+                    _selectedCollectionId);
+
+            ResultsDataGrid.ItemsSource =
+                results;
         }
 
         private void SettingsMenuItem_Click(
@@ -112,7 +351,8 @@ namespace WemBam
         {
             IReadOnlyList<SearchResult> results =
                 _searchEngine.Search(
-                    FilterTextBox.Text);
+                    FilterTextBox.Text,
+                    _selectedCollectionId);
 
             ResultsDataGrid.ItemsSource =
                 results;

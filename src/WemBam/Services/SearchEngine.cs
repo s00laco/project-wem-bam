@@ -8,11 +8,14 @@ namespace WemBam.Services
     public class SearchEngine
     {
         public IReadOnlyList<SearchResult> Search(
-            string query)
+            string query,
+            long? collectionId = null)
         {
             ArgumentNullException.ThrowIfNull(query);
 
-            return DatabaseManager.SearchAudioAssets(query);
+            return DatabaseManager.SearchAudioAssets(
+                query,
+                collectionId);
         }
     }
 }

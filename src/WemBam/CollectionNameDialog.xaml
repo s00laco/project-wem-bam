@@ -1,0 +1,49 @@
+﻿<Window x:Class="WemBam.CollectionNameDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="New Collection"
+        Width="400"
+        Height="150"
+        MinWidth="350"
+        MinHeight="150"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid Margin="12">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="12"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Text="Collection name:"
+                   VerticalAlignment="Center"/>
+
+        <TextBox x:Name="NameTextBox"
+                 Grid.Row="2"
+                 MinWidth="300"
+                 Height="24"/>
+
+        <StackPanel Grid.Row="4"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+
+            <Button Content="Save"
+                    Width="80"
+                    Margin="0,0,8,0"
+                    IsDefault="True"
+                    Click="CreateButton_Click"/>
+
+            <Button Content="Cancel"
+                    Width="80"
+                    IsCancel="True"/>
+
+        </StackPanel>
+
+    </Grid>
+
+</Window>

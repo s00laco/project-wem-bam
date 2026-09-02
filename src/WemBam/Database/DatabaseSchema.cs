@@ -163,5 +163,35 @@ namespace WemBam.Database
             command.CommandText = sql;
             command.ExecuteNonQuery();
         }
+
+        public static void UpgradeToVersion6(
+            SqliteConnection connection)
+        {
+            const string sql = """
+        CREATE TABLE IF NOT EXISTS Collections
+        (
+            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+            Name TEXT NOT NULL UNIQUE,
+            Colour TEXT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS AudioAssetCollections
+        (
+            AudioAssetId INTEGER NOT NULL,
+            CollectionId INTEGER NOT NULL,
+            UNIQUE(AudioAssetId, CollectionId)
+        );
+
+        CREATE INDEX IF NOT EXISTS IX_AudioAssetCollections_AudioAssetId
+            ON AudioAssetCollections(AudioAssetId);
+
+        CREATE INDEX IF NOT EXISTS IX_AudioAssetCollections_CollectionId
+            ON AudioAssetCollections(CollectionId);
+        """;
+
+            using SqliteCommand command = connection.CreateCommand();
+            command.CommandText = sql;
+            command.ExecuteNonQuery();
+        }
     }
 }

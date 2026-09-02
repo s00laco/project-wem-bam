@@ -5,6 +5,7 @@ using WemBam.Logging;
 using WemBam.Models;
 using System.Collections.Generic;
 using System.Threading;
+using System.Linq;
 
 namespace WemBam.Database
 {
@@ -487,7 +488,8 @@ namespace WemBam.Database
         }
 
         public static IReadOnlyList<SearchResult> SearchAudioAssets(
-    string query)
+            string query,
+            long? collectionId = null)
         {
             ArgumentNullException.ThrowIfNull(query);
 
@@ -514,7 +516,7 @@ namespace WemBam.Database
 
             command.CommandText =
                 """
-        SELECT
+            SELECT
             audioAsset.FileName,
 
             streamedFile.Path,
@@ -717,7 +719,9 @@ namespace WemBam.Database
 
             defaultSource.ContainerPath,
 
-            defaultSource.AssetPath
+            defaultSource.AssetPath,
+
+            audioAsset.Id AS AudioAssetId
 
         FROM AudioAssets audioAsset
 
@@ -730,6 +734,7 @@ namespace WemBam.Database
                audioAsset.FileId
 
         WHERE
+        (
             $query = ''
 
             OR audioAsset.FileId LIKE
@@ -771,6 +776,20 @@ namespace WemBam.Database
                   AND wwiseEvent.Name LIKE
                       $searchPattern ESCAPE '\'
             )
+        )
+        AND
+        (
+            $collectionId IS NULL
+            OR EXISTS
+            (
+                SELECT 1
+                FROM AudioAssetCollections membership
+                WHERE membership.AudioAssetId =
+                      audioAsset.Id
+                  AND membership.CollectionId =
+                      $collectionId
+            )
+        )
 
         ORDER BY
             SearchScore DESC,
@@ -789,6 +808,10 @@ namespace WemBam.Database
             command.Parameters.AddWithValue(
                 "$prefixPattern",
                 prefixPattern);
+
+            command.Parameters.AddWithValue(
+                "$collectionId",
+                (object?)collectionId ?? DBNull.Value);
 
             List<SearchResult> results = new();
 
@@ -832,12 +855,273 @@ namespace WemBam.Database
                         AssetPath =
                             reader.IsDBNull(5)
                                 ? string.Empty
-                                : reader.GetString(5)
+                                : reader.GetString(5),
+
+                        AudioAssetId =
+                            reader.GetInt64(6)
                     });
             }
 
             return results;
         }
 
+        public static IReadOnlyList<Collection> GetCollections()
+        {
+            using SqliteConnection connection = OpenConnection();
+
+            using SqliteCommand command = connection.CreateCommand();
+
+            command.CommandText =
+                """
+                SELECT
+                    Id,
+                    Name,
+                    Colour
+                FROM Collections
+                ORDER BY Name COLLATE NOCASE;
+                """;
+
+            List<Collection> collections = new();
+
+            using SqliteDataReader reader =
+                command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                collections.Add(
+                    new Collection
+                    {
+                        Id = reader.GetInt64(0),
+                        Name = reader.GetString(1),
+                        Colour = reader.IsDBNull(2)
+                            ? null
+                            : reader.GetString(2)
+                    });
+            }
+
+            return collections;
+        }
+
+        public static long AddCollection(
+            string name,
+            string? colour = null)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            using SqliteConnection connection = OpenConnection();
+
+            using SqliteCommand command = connection.CreateCommand();
+
+            command.CommandText =
+                """
+                INSERT INTO Collections
+                (
+                    Name,
+                    Colour
+                )
+                VALUES
+                (
+                    $name,
+                    $colour
+                )
+                RETURNING Id;
+                """;
+
+            command.Parameters.AddWithValue(
+                "$name",
+                name.Trim());
+
+            command.Parameters.AddWithValue(
+                "$colour",
+                (object?)colour ?? DBNull.Value);
+
+            return command.ExecuteScalar() is long id
+                ? id
+                : throw new InvalidOperationException(
+                    "Failed to retrieve the new Collection ID.");
+        }
+
+        public static void RenameCollection(
+            long collectionId,
+            string name)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+            using SqliteConnection connection = OpenConnection();
+
+            using SqliteCommand command = connection.CreateCommand();
+
+            command.CommandText =
+                """
+                UPDATE Collections
+                SET Name = $name
+                WHERE Id = $collectionId;
+                """;
+
+            command.Parameters.AddWithValue(
+                "$name",
+                name.Trim());
+
+            command.Parameters.AddWithValue(
+                "$collectionId",
+                collectionId);
+
+            command.ExecuteNonQuery();
+        }
+
+        public static void DeleteCollection(
+            long collectionId)
+        {
+            using SqliteConnection connection = OpenConnection();
+
+            using SqliteTransaction transaction =
+                connection.BeginTransaction();
+
+            try
+            {
+                using SqliteCommand deleteMemberships =
+                    connection.CreateCommand();
+
+                deleteMemberships.Transaction = transaction;
+
+                deleteMemberships.CommandText =
+                    """
+                    DELETE FROM AudioAssetCollections
+                    WHERE CollectionId = $collectionId;
+                    """;
+
+                deleteMemberships.Parameters.AddWithValue(
+                    "$collectionId",
+                    collectionId);
+
+                deleteMemberships.ExecuteNonQuery();
+
+                using SqliteCommand deleteCollection =
+                    connection.CreateCommand();
+
+                deleteCollection.Transaction = transaction;
+
+                deleteCollection.CommandText =
+                    """
+                    DELETE FROM Collections
+                    WHERE Id = $collectionId;
+                    """;
+
+                deleteCollection.Parameters.AddWithValue(
+                    "$collectionId",
+                    collectionId);
+
+                deleteCollection.ExecuteNonQuery();
+
+                transaction.Commit();
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
+
+        public static IReadOnlyList<long> GetCollectionIdsForAudioAsset(
+            long audioAssetId)
+        {
+            using SqliteConnection connection = OpenConnection();
+
+            using SqliteCommand command = connection.CreateCommand();
+
+            command.CommandText =
+                """
+                SELECT CollectionId
+                FROM AudioAssetCollections
+                WHERE AudioAssetId = $audioAssetId
+                ORDER BY CollectionId;
+                """;
+
+            command.Parameters.AddWithValue(
+                "$audioAssetId",
+                audioAssetId);
+
+            List<long> collectionIds = new();
+
+            using SqliteDataReader reader =
+                command.ExecuteReader();
+
+            while (reader.Read())
+            {
+                collectionIds.Add(
+                    reader.GetInt64(0));
+            }
+
+            return collectionIds;
+        }
+
+        public static void SetAudioAssetCollections(
+            long audioAssetId,
+            IEnumerable<long> collectionIds)
+        {
+            using SqliteConnection connection = OpenConnection();
+
+            using SqliteTransaction transaction =
+                connection.BeginTransaction();
+
+            try
+            {
+                using SqliteCommand deleteCommand =
+                    connection.CreateCommand();
+
+                deleteCommand.Transaction = transaction;
+
+                deleteCommand.CommandText =
+                    """
+                    DELETE FROM AudioAssetCollections
+                    WHERE AudioAssetId = $audioAssetId;
+                    """;
+
+                deleteCommand.Parameters.AddWithValue(
+                    "$audioAssetId",
+                    audioAssetId);
+
+                deleteCommand.ExecuteNonQuery();
+
+                foreach (long collectionId in collectionIds.Distinct())
+                {
+                    using SqliteCommand insertCommand =
+                        connection.CreateCommand();
+
+                    insertCommand.Transaction = transaction;
+
+                    insertCommand.CommandText =
+                        """
+                        INSERT INTO AudioAssetCollections
+                        (
+                            AudioAssetId,
+                            CollectionId
+                        )
+                        VALUES
+                        (
+                            $audioAssetId,
+                            $collectionId
+                        );
+                        """;
+
+                    insertCommand.Parameters.AddWithValue(
+                        "$audioAssetId",
+                        audioAssetId);
+
+                    insertCommand.Parameters.AddWithValue(
+                        "$collectionId",
+                        collectionId);
+
+                    insertCommand.ExecuteNonQuery();
+                }
+
+                transaction.Commit();
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
     }
 }

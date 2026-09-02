@@ -182,9 +182,11 @@
 									<RowDefinition Height="Auto"/>
 								</Grid.RowDefinitions>
 
-								<TreeView Grid.Row="0">
+                                <TreeView x:Name="CollectionsTreeView"
+                                          Grid.Row="0"
+                                          SelectedItemChanged="CollectionsTreeView_SelectedItemChanged">
 
-									<TreeViewItem Header="All Sounds"/>
+                                    <TreeViewItem Header="All Sounds"/>
 
 									<TreeViewItem Header="Favourites"/>
 
@@ -200,15 +202,18 @@
                                             Margin="0,8,0,0">
 
 									<Button Content="New"
-                                            Width="70"/>
+                                            Width="70"
+                                            Click="NewCollectionButton_Click"/>
 
 									<Button Content="Rename"
                                             Width="75"
-                                            Margin="6,0,0,0"/>
+                                            Margin="6,0,0,0"
+                                            Click="RenameCollectionButton_Click"/>  
 
 									<Button Content="Delete"
                                             Width="70"
-                                            Margin="6,0,0,0"/>
+                                            Margin="6,0,0,0"
+                                            Click="DeleteCollectionButton_Click"/>
 
 								</StackPanel>
 
@@ -421,34 +426,55 @@
 
                                     <DataGridTemplateColumn
                                         Header=""
-                                        Width="36">
+                                        Width="64">
 
                                         <DataGridTemplateColumn.CellTemplate>
                                             <DataTemplate>
 
-                                                <Button
-                                                    Width="28"
-                                                    Height="24"
-                                                    Padding="0"
-                                                    Background="Transparent"
-                                                    BorderThickness="0"
+                                                <StackPanel
+                                                    Orientation="Horizontal"
                                                     HorizontalAlignment="Center"
-                                                    VerticalAlignment="Center"
-                                                    Click="PlayButton_Click">
+                                                    VerticalAlignment="Center">
 
-                                                    <Button.Style>
-                                                        <Style TargetType="Button">
-                                                            <Setter Property="Content" Value="▶"/>
+                                                    <Button
+                                                        Width="34"
+                                                        Height="28"
+                                                        Padding="0"
+                                                        Background="Transparent"
+                                                        BorderThickness="0"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Content="⋮"
+                                                        FontSize="18"
+                                                        FontWeight="Bold"
+                                                        Click="CollectionsButton_Click"
+                                                        ToolTip="Collections..."/>
 
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding IsPlaying}" Value="True">
-                                                                    <Setter Property="Content" Value="Ⅱ"/>
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </Button.Style>
+                                                    <Button
+                                                        Width="28"
+                                                        Height="24"
+                                                        Padding="0"
+                                                        Background="Transparent"
+                                                        BorderThickness="0"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        Click="PlayButton_Click">
 
-                                                </Button>
+                                                        <Button.Style>
+                                                            <Style TargetType="Button">
+                                                                <Setter Property="Content" Value="▶"/>
+
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsPlaying}" Value="True">
+                                                                        <Setter Property="Content" Value="Ⅱ"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Button.Style>
+
+                                                    </Button>
+
+                                                </StackPanel>
 
                                             </DataTemplate>
                                         </DataGridTemplateColumn.CellTemplate>
