@@ -708,3 +708,54 @@ Keeping one logical asset with multiple physical sources allows Wem Bam to repre
 A loose WEM may intentionally replace the shipped BA2 version, so different audio content under the same File ID must not be discarded or merged into an indistinguishable copy.
 
 The physical source that is played is therefore a property of the logical audio asset and can be changed by the user without creating another logical asset.
+
+---
+
+## 2026-09-04
+
+### Derived Audio Categories from WEM Paths
+
+**Decision**
+
+Wem Bam will derive audio category information from the folder structure and nomenclature encoded in WEM paths.
+
+The leading WEM path component provides a short Bethesda/Wwise category code, for example:
+
+- `AMB` = Ambience
+- `SFX` = Sound Effects
+- `WPN` = Weapon
+- `ITM` = Item
+- `UI` = User Interface
+- `VEH` = Vehicle
+- `MUS` = Music
+
+These derived categories are application-level metadata and are distinct from user-created Tags. They are derived on demand when an individual audio asset is displayed and are not persisted in the database or stored as separate indexed metadata.
+
+The full WEM path will continue to be retained and displayed as source metadata. The derived category information is an additional interpretation of that existing path rather than a replacement for it.
+
+The conversion from short code to human-readable category name will use a central application-owned mapping of known Bethesda/Wwise category codes to their display names.
+
+The mapping will be deterministic and shared by any feature that consumes these derived categories. It must not be duplicated independently across UI components or search/filter implementations.
+
+The approved category mappings are educated interpretations based on research into Starfield's WEM paths and naming conventions. They are not assumed to be definitively documented by Bethesda/Wwise.
+
+Unknown or unrecognised category codes must remain representable using their original raw value rather than causing display failure.
+
+The category hierarchy will initially be treated as derived information associated with the individual AudioAsset being displayed. Wem Bam will not create a separate user-editable category hierarchy in this stage.
+
+**Reason**
+
+Starfield's WEM paths contain meaningful nomenclature that provides useful information about the nature of an audio asset.
+
+Displaying the full WEM path already exposes this information, but interpreting established category codes allows Wem Bam to present the same information more clearly.
+
+The interpretation is performed only for the individual audio asset being viewed, rather than being calculated for the entire audio library. This keeps the implementation simple while avoiding unnecessary storage and indexing of derived information.
+
+Keeping the category mapping separate from user Tags preserves an important distinction:
+
+- Derived categories describe information inferred from the game's existing audio structure.
+- User Tags describe information assigned by the Wem Bam user.
+
+A central mapping also provides a single place to maintain the Bethesda/Wwise terminology as additional category codes are identified or existing interpretations are refined.
+
+The original WEM path remains the authoritative source information, while the derived category is a convenience representation of that information.

@@ -34,6 +34,8 @@ namespace WemBam
 
         private long? _selectedCollectionId;
 
+        private AudioAssetDetails? _selectedAudioAssetDetails;
+
         private WaveOutEvent? _currentOutput;
 
         private Stream? _currentStream;
@@ -301,6 +303,69 @@ namespace WemBam
 
             ResultsDataGrid.ItemsSource =
                 results;
+        }
+
+        private void ResultsDataGrid_SelectionChanged(
+            object sender,
+            System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if (ResultsDataGrid.SelectedItem is not SearchResult result)
+            {
+                _selectedAudioAssetDetails = null;
+
+                SelectedFilenameTextBox.Text = string.Empty;
+                SelectedDurationTextBox.Text = string.Empty;
+                SelectedLoopedTextBox.Text = string.Empty;
+                SelectedWwisePathTextBox.Text = string.Empty;
+                SelectedContainerPathTextBox.Text = string.Empty;
+                SelectedAssetPathTextBox.Text = string.Empty;
+                SelectedWwiseEventsListBox.ItemsSource = null;
+                SelectedCategoriesListBox.ItemsSource = null;
+
+                return;
+            }
+
+            _selectedAudioAssetDetails =
+                DatabaseManager.GetAudioAssetDetails(
+                    result.AudioAssetId);
+
+            if (_selectedAudioAssetDetails is null)
+            {
+                return;
+            }
+
+            AudioAsset audioAsset =
+                _selectedAudioAssetDetails.AudioAsset;
+
+            SelectedFilenameTextBox.Text =
+                audioAsset.FileName;
+
+            SelectedDurationTextBox.Text =
+                audioAsset.Duration?.ToString() ?? string.Empty;
+
+            SelectedLoopedTextBox.Text =
+                _selectedAudioAssetDetails.IsLooped ? "Yes" : "No";
+
+            SelectedWwisePathTextBox.Text =
+                _selectedAudioAssetDetails.WwisePath;
+
+            AudioAssetSource? defaultSource =
+                _selectedAudioAssetDetails.Sources
+                    .FirstOrDefault(
+                        source =>
+                            source.Id == audioAsset.DefaultSourceId);
+
+            SelectedContainerPathTextBox.Text =
+                defaultSource?.ContainerPath ?? string.Empty;
+
+            SelectedAssetPathTextBox.Text =
+                defaultSource?.AssetPath ?? string.Empty;
+
+            SelectedWwiseEventsListBox.ItemsSource =
+                _selectedAudioAssetDetails.WwiseEvents;
+
+            SelectedCategoriesListBox.ItemsSource =
+                _selectedAudioAssetDetails.Categories;
         }
 
         private void SettingsMenuItem_Click(

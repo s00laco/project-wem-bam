@@ -278,7 +278,8 @@
                                       CanUserAddRows="False"
                                       CanUserDeleteRows="False"
                                       IsReadOnly="True"
-                                      HeadersVisibility="Column">
+                                      HeadersVisibility="Column"
+                                      SelectionChanged="ResultsDataGrid_SelectionChanged">
 
                                 <DataGrid.Resources>
 
@@ -1086,69 +1087,179 @@
                           ResizeBehavior="PreviousAndNext"/>
 
 			<!-- Details -->
-			<GroupBox Grid.Column="2"
-                      Header="Selected Sound"
-                      Margin="6,0,0,0"
-                      MinWidth="280">
+            <GroupBox Grid.Column="2"
+              Header="Selected Sound"
+              Margin="5">
 
-				<ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
 
-					<StackPanel Margin="10">
+                    <StackPanel Margin="10">
 
-						<TextBlock Text="Filename"
-                                   FontWeight="SemiBold"/>
+                        <TextBlock Text="Filename"
+                            FontWeight="SemiBold"/>
 
-						<TextBox IsReadOnly="True"
-                                 BorderThickness="0"
-                                 Background="Transparent"
-                                 Margin="0,1,0,8"
-                                 Padding="0"/>
+                        <TextBox x:Name="SelectedFilenameTextBox"
+                            IsReadOnly="True"
+                            BorderThickness="0"
+                            Background="Transparent"
+                            Margin="0,1,0,8"
+                            Padding="0"/>
 
-						<TextBlock Text="Path"
-                                   FontWeight="SemiBold"/>
+                        <TextBlock Text="Duration"
+                            FontWeight="SemiBold"/>
 
-						<TextBox IsReadOnly="True"
-                                 BorderThickness="0"
-                                 Background="Transparent"
-                                 HorizontalScrollBarVisibility="Auto"
-                                 Margin="0,1,0,8"
-                                 Padding="0"/>
+                        <TextBox x:Name="SelectedDurationTextBox"
+                            IsReadOnly="True"
+                            BorderThickness="0"
+                            Background="Transparent"
+                            Margin="0,1,0,8"
+                            Padding="0"/>
 
-						<TextBlock Text="File ID"
-                                   FontWeight="SemiBold"/>
+                        <TextBlock Text="Looped"
+                            FontWeight="SemiBold"/>
 
-						<TextBox IsReadOnly="True"
-                                 BorderThickness="0"
-                                 Background="Transparent"
-                                 Margin="0,1,0,10"
-                                 Padding="0"/>
+                        <TextBox x:Name="SelectedLoopedTextBox"
+                            IsReadOnly="True"
+                            BorderThickness="0"
+                            Background="Transparent"
+                            Margin="0,1,0,8"
+                            Padding="0"/>
 
-						<Separator Margin="0,2,0,8"/>
+                        <Separator Margin="0,2,0,8"/>
 
-						<TextBlock Text="Tags"
-                                   FontWeight="SemiBold"
-                                   Margin="0,0,0,4"/>
+                        <TextBlock Text="WEM Path"
+                            FontWeight="SemiBold"/>
 
-						<ListBox Height="100"/>
+                        <TextBox x:Name="SelectedWwisePathTextBox"
+                            IsReadOnly="True"
+                            BorderThickness="0"
+                            Background="Transparent"
+                            HorizontalScrollBarVisibility="Auto"
+                            Margin="0,1,0,8"
+                            Padding="0"/>
 
-						<Separator Margin="0,8"/>
+                        <TextBlock Text="Default Source — Container Path"
+                            FontWeight="SemiBold"/>
 
-						<TextBlock Text="Notes"
-                                   FontWeight="SemiBold"
-                                   Margin="0,0,0,4"/>
+                        <TextBox x:Name="SelectedContainerPathTextBox"
+                            IsReadOnly="True"
+                            BorderThickness="0"
+                            Background="Transparent"
+                            HorizontalScrollBarVisibility="Auto"
+                            Margin="0,1,0,8"
+                            Padding="0"/>
 
-						<TextBox Height="180"
-                                 AcceptsReturn="True"
-                                 VerticalScrollBarVisibility="Auto"
-                                 TextWrapping="Wrap"/>
+                        <TextBlock Text="Default Source — Asset Path"
+                            FontWeight="SemiBold"/>
 
-					</StackPanel>
+                        <TextBox x:Name="SelectedAssetPathTextBox"
+                            IsReadOnly="True"
+                            BorderThickness="0"
+                            Background="Transparent"
+                            HorizontalScrollBarVisibility="Auto"
+                            Margin="0,1,0,10"
+                            Padding="0"/>
 
-				</ScrollViewer>
+                        <Separator Margin="0,2,0,8"/>
 
-			</GroupBox>
+                        <TextBlock Text="Classes"
+                            FontWeight="SemiBold"
+                            Margin="0,0,0,4"/>
 
-		</Grid>
+                        <ListBox x:Name="SelectedCategoriesListBox"
+                            Height="100">
+
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBox Text="{Binding DisplayName}"
+                                        IsReadOnly="True"
+                                        BorderThickness="0"
+                                        Background="Transparent"
+                                        Padding="0"
+                                        Margin="0,1"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+
+                        </ListBox>
+
+                        <Separator Margin="0,8"/>
+
+                        <TextBlock Text="Wwise Events"
+                            FontWeight="SemiBold"
+                            Margin="0,0,0,4"/>
+
+                        <ListBox x:Name="SelectedWwiseEventsListBox"
+                            Height="180">
+
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,2,0,6">
+
+                                        <TextBox Text="{Binding Name}"
+                                            IsReadOnly="True"
+                                            BorderThickness="0"
+                                            Background="Transparent"
+                                            FontWeight="SemiBold"
+                                            TextWrapping="Wrap"
+                                            Padding="0"/>
+
+                                        <TextBox Text="{Binding DurationType, StringFormat=Duration Type: {0}}"
+                                            IsReadOnly="True"
+                                            BorderThickness="0"
+                                            Background="Transparent"
+                                            Margin="0,2,0,0"
+                                            Padding="0"/>
+
+                                        <StackPanel Orientation="Horizontal">
+
+                                            <TextBox Text="{Binding DurationMin, StringFormat=Min: {0}}"
+                                                IsReadOnly="True"
+                                                BorderThickness="0"
+                                                Background="Transparent"
+                                                Padding="0"/>
+
+                                            <TextBlock Text="    "/>
+
+                                            <TextBox Text="{Binding DurationMax, StringFormat=Max: {0}}"
+                                                IsReadOnly="True"
+                                                BorderThickness="0"
+                                                Background="Transparent"
+                                                Padding="0"/>
+
+                                        </StackPanel>
+
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+
+                        </ListBox>
+
+                        <Separator Margin="0,8"/>
+
+                        <TextBlock Text="Tags"
+                            FontWeight="SemiBold"
+                            Margin="0,0,0,4"/>
+
+                        <ListBox Height="100"/>
+
+                        <Separator Margin="0,8"/>
+
+                        <TextBlock Text="Notes"
+                            FontWeight="SemiBold"
+                            Margin="0,0,0,4"/>
+
+                        <TextBox Height="180"
+                            AcceptsReturn="True"
+                            VerticalScrollBarVisibility="Auto"
+                            TextWrapping="Wrap"/>
+
+                    </StackPanel>
+
+                </ScrollViewer>
+
+            </GroupBox>
+
+        </Grid>
 
 	</DockPanel>
 

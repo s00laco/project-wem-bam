@@ -476,6 +476,80 @@ The log viewer should be read-only and should not allow editing of log files.
 
 ---
 
+---
+
+# Audio Categories
+
+## Parsed WEM Path Categories
+
+**Status:** Investigation
+
+Wem Bam can derive human-readable audio categories from the established folder structure and naming conventions used in Starfield's WEM paths.
+
+Examples include:
+
+- `AMB` = Ambience
+- `SFX` = Sound Effects
+- `WPN` = Weapon
+- `ITM` = Item
+- `UI` = User Interface
+- `VEH` = Vehicle
+- `MUS` = Music
+
+These derived categories should remain distinct from user-created Tags.
+
+### Potential Uses
+
+Derived category information could eventually be:
+
+- Displayed in the Selected Sound metadata panel.
+- Used as searchable metadata.
+- Used as filters in the main window.
+- Used to quickly narrow large collections of audio.
+- Used alongside the existing full WEM path.
+
+The initial implementation could simply parse the WEM path and expose the resulting category information as a hierarchy, for example:
+
+`SFX → FX → Explosion → ShipPart`
+
+or:
+
+`VEH → Engine → Panoptes → M_Atlas → Main`
+
+The displayed hierarchy should preserve the order of the original WEM path rather than attempting to infer relationships that are not explicitly present.
+
+### Future: Audio Categories Browser
+
+A future `Audio Categories R1` milestone could turn the derived category information into an actual browsable structural tree.
+
+This would effectively reconstruct a navigable representation of Bethesda's original WEM folder taxonomy from the indexed paths.
+
+For example:
+
+```text
+Audio Categories
+│
+├─ Sound Effects
+│  ├─ Ambience
+│  │  ├─ Cities
+│  │  │  ├─ Cydonia
+│  │  │  ├─ New Atlantis
+│  │  │  └─ Akila
+│  │  └─ Interiors
+│  │     ├─ Industrial
+│  │     └─ Residential
+│  │
+│  ├─ Weapon
+│  │  ├─ Hand
+│  │  │  ├─ Rifle
+│  │  │  └─ Pistol
+│  │  └─ ...
+│  │
+│  ├─ Vehicle
+│  └─ User Interface
+```
+---
+
 # Indexing
 
 

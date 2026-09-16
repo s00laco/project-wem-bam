@@ -1,11 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using Microsoft.Data.Sqlite;
 using WemBam.Logging;
 using WemBam.Models;
-using System.Collections.Generic;
-using System.Threading;
-using System.Linq;
+using WemBam.Services;
 
 namespace WemBam.Database
 {
@@ -229,6 +230,253 @@ namespace WemBam.Database
                 DefaultSourceId = reader.IsDBNull(5)
                     ? null
                     : reader.GetInt64(5)
+            };
+        }
+
+        public static AudioAssetDetails? GetAudioAssetDetails(
+    long audioAssetId)
+        {
+            using SqliteConnection connection = OpenConnection();
+
+            AudioAsset? audioAsset;
+
+            using (SqliteCommand command = connection.CreateCommand())
+            {
+                command.CommandText =
+                    """
+            SELECT
+                Id,
+                FileId,
+                FileName,
+                FileExtension,
+                Duration,
+                DefaultSourceId
+            FROM AudioAssets
+            WHERE Id = $audioAssetId;
+            """;
+
+                command.Parameters.AddWithValue(
+                    "$audioAssetId",
+                    audioAssetId);
+
+                using SqliteDataReader reader =
+                    command.ExecuteReader();
+
+                if (!reader.Read())
+                {
+                    return null;
+                }
+
+                audioAsset =
+                    new AudioAsset
+                    {
+                        Id = reader.GetInt64(0),
+
+                        FileId =
+                            reader.IsDBNull(1)
+                                ? null
+                                : reader.GetString(1),
+
+                        FileName =
+                            reader.GetString(2),
+
+                        FileExtension =
+                            reader.GetString(3),
+
+                        Duration =
+                            reader.IsDBNull(4)
+                                ? null
+                                : reader.GetInt32(4),
+
+                        DefaultSourceId =
+                            reader.IsDBNull(5)
+                                ? null
+                                : reader.GetInt64(5)
+                    };
+            }
+
+            List<AudioAssetSource> sources = new();
+
+            using (SqliteCommand command = connection.CreateCommand())
+            {
+                command.CommandText =
+                    """
+            SELECT
+                Id,
+                AudioAssetId,
+                SourceId,
+                ContainerPath,
+                AssetPath,
+                ContentHash
+            FROM AudioAssetSources
+            WHERE AudioAssetId = $audioAssetId
+            ORDER BY Id;
+            """;
+
+                command.Parameters.AddWithValue(
+                    "$audioAssetId",
+                    audioAssetId);
+
+                using SqliteDataReader reader =
+                    command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    sources.Add(
+                        new AudioAssetSource
+                        {
+                            Id = reader.GetInt64(0),
+
+                            AudioAssetId =
+                                reader.GetInt64(1),
+
+                            SourceId =
+                                reader.GetInt64(2),
+
+                            ContainerPath =
+                                reader.IsDBNull(3)
+                                    ? null
+                                    : reader.GetString(3),
+
+                            AssetPath =
+                                reader.GetString(4),
+
+                            ContentHash =
+                                reader.IsDBNull(5)
+                                    ? null
+                                    : reader.GetString(5)
+                        });
+                }
+            }
+
+            string wwisePath = string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(audioAsset.FileId))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+
+                command.CommandText =
+                    """
+            SELECT Path
+            FROM WwiseStreamedFiles
+            WHERE FileId = $fileId
+            LIMIT 1;
+            """;
+
+                command.Parameters.AddWithValue(
+                    "$fileId",
+                    audioAsset.FileId);
+
+                object? value =
+                    command.ExecuteScalar();
+
+                if (value is string path)
+                {
+                    wwisePath = path;
+                }
+            }
+
+            List<WwiseEvent> wwiseEvents = new();
+
+            if (!string.IsNullOrWhiteSpace(audioAsset.FileId))
+            {
+                using SqliteCommand command = connection.CreateCommand();
+
+                command.CommandText =
+                    """
+            SELECT
+                wwiseEvent.Id,
+                wwiseEvent.Name,
+                wwiseEvent.ObjectPath,
+                wwiseEvent.DurationType,
+                wwiseEvent.DurationMin,
+                wwiseEvent.DurationMax
+            FROM WwiseEventToStreamedFiles relationship
+            INNER JOIN WwiseEvents wwiseEvent
+                ON wwiseEvent.Id =
+                   relationship.WwiseEventId
+            WHERE relationship.FileId = $fileId
+            ORDER BY wwiseEvent.Name COLLATE NOCASE;
+            """;
+
+                command.Parameters.AddWithValue(
+                    "$fileId",
+                    audioAsset.FileId);
+
+                using SqliteDataReader reader =
+                    command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    wwiseEvents.Add(
+                        new WwiseEvent
+                        {
+                            Id =
+                                reader.GetString(0),
+
+                            Name =
+                                reader.GetString(1),
+
+                            ObjectPath =
+                                reader.GetString(2),
+
+                            DurationType =
+                                reader.GetString(3),
+
+                            DurationMin =
+                                reader.IsDBNull(4)
+                                    ? null
+                                    : reader.GetDouble(4),
+
+                            DurationMax =
+                                reader.IsDBNull(5)
+                                    ? null
+                                    : reader.GetDouble(5)
+                        });
+                }
+            }
+
+            List<string?> classSources =
+                new()
+                {
+                    wwisePath,
+                    audioAsset.FileName
+                };
+
+            foreach (WwiseEvent wwiseEvent in wwiseEvents)
+            {
+                classSources.Add(wwiseEvent.Name);
+                classSources.Add(wwiseEvent.ObjectPath);
+            }
+
+            IReadOnlyList<AudioCategory> categories =
+                AudioCategoryLibrary.CreateManyFromWwiseText(
+                    classSources.ToArray());
+
+            bool isLooped =
+                classSources.Any(
+                    source =>
+                        !string.IsNullOrWhiteSpace(source) &&
+                        (source.Contains(
+                            "_LP",
+                            StringComparison.OrdinalIgnoreCase) ||
+                         source.Contains(
+                            "Loop",
+                            StringComparison.OrdinalIgnoreCase)));
+
+            return new AudioAssetDetails
+            {
+                AudioAsset = audioAsset,
+
+                WwisePath = wwisePath,
+
+                Sources = sources,
+
+                WwiseEvents = wwiseEvents,
+
+                Categories = categories,
+
+                IsLooped = isLooped
             };
         }
 
