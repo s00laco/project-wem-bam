@@ -90,6 +90,25 @@ namespace WemBam.Services.Audio.Interop
             }
         }
 
+        internal long StreamSamples
+        {
+            get
+            {
+                ThrowIfDisposed();
+
+                libvgmstream_t* lib =
+                    (libvgmstream_t*)_handle;
+
+                if (lib->format is null)
+                {
+                    throw new InvalidOperationException(
+                        "libvgmstream did not provide format information.");
+                }
+
+                return lib->format->stream_samples;
+            }
+        }
+
         internal int Decode(
             Span<short> destination)
         {

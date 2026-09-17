@@ -71,6 +71,33 @@ namespace WemBam.Database
             command.ExecuteNonQuery();
         }
 
+        public static void UpdateAudioAssetDuration(
+            long audioAssetId,
+            int? duration)
+        {
+            using SqliteConnection connection = OpenConnection();
+
+            using SqliteCommand command = connection.CreateCommand();
+
+            command.CommandText =
+                """
+        UPDATE AudioAssets
+        SET Duration = $duration
+        WHERE Id = $audioAssetId;
+        """;
+
+            command.Parameters.AddWithValue(
+                "$audioAssetId",
+                audioAssetId);
+
+            command.Parameters.AddWithValue(
+                "$duration",
+                (object?)duration ?? DBNull.Value);
+
+            command.ExecuteNonQuery();
+        }
+
+
         public static long AddAudioAsset(
             AudioAsset audioAsset)
         {
@@ -767,6 +794,8 @@ namespace WemBam.Database
             SELECT
             audioAsset.FileName,
 
+            audioAsset.Duration,
+
             streamedFile.Path,
 
             (
@@ -1070,10 +1099,10 @@ namespace WemBam.Database
             {
                 List<string> wwiseEvents = new();
 
-                if (!reader.IsDBNull(2))
+                if (!reader.IsDBNull(3))
                 {
                     string eventText =
-                        reader.GetString(2);
+                        reader.GetString(3);
 
                     wwiseEvents.AddRange(
                         eventText.Split(
@@ -1087,26 +1116,31 @@ namespace WemBam.Database
                         FileName =
                             reader.GetString(0),
 
-                        WwisePath =
+                        Duration =
                             reader.IsDBNull(1)
+                                ? null
+                                : reader.GetInt32(1),
+
+                        WwisePath =
+                            reader.IsDBNull(2)
                                 ? string.Empty
-                                : reader.GetString(1),
+                                : reader.GetString(2),
 
                         WwiseEvents =
                             wwiseEvents,
 
                         ContainerPath =
-                            reader.IsDBNull(4)
-                                ? null
-                                : reader.GetString(4),
-
-                        AssetPath =
                             reader.IsDBNull(5)
-                                ? string.Empty
+                                ? null
                                 : reader.GetString(5),
 
+                        AssetPath =
+                            reader.IsDBNull(6)
+                                ? string.Empty
+                                : reader.GetString(6),
+
                         AudioAssetId =
-                            reader.GetInt64(6)
+                            reader.GetInt64(7)
                     });
             }
 

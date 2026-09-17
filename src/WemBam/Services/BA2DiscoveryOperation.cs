@@ -4,12 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using WemBam.Contracts;
-using WemBam.Models;
-using WemBam.Database;
 using Mutagen.Bethesda;
 using Mutagen.Bethesda.Archives;
 using Mutagen.Bethesda.Environments;
+using WemBam.Contracts;
+using WemBam.Database;
+using WemBam.Models;
+using WemBam.Services.Audio;
 
 namespace WemBam.Services
 {
@@ -139,6 +140,19 @@ namespace WemBam.Services
                             DatabaseManager.SetDefaultAudioAssetSource(
                                 audioAsset.Id,
                                 audioAssetSourceId);
+
+                            AudioStreamRequest request = new()
+                            {
+                                ContainerPath = source.Path,
+                                AssetPath = path
+                            };
+
+                            audioAsset.Duration =
+                                AudioDurationService.GetDuration(request);
+
+                            DatabaseManager.UpdateAudioAssetDuration(
+                                audioAsset.Id,
+                                audioAsset.Duration);
 
                             processed++;
 

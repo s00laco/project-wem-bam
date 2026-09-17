@@ -10,6 +10,26 @@ namespace WemBam.Models
     {
         public string FileName { get; set; } = string.Empty;
 
+        public int? Duration { get; set; }
+
+        public string DurationText
+        {
+            get
+            {
+                if (Duration is not int duration)
+                {
+                    return string.Empty;
+                }
+
+                if (duration == 0)
+                {
+                    duration = 1;
+                }
+
+                return TimeSpan.FromSeconds(duration).ToString(@"mm\:ss");
+            }
+        }
+
         public long AudioAssetId { get; set; }
 
         public string WwisePath { get; set; } = string.Empty;

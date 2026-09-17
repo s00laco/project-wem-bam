@@ -533,6 +533,11 @@
 
                                     </DataGridTemplateColumn>
 
+                                    <DataGridTextColumn
+                                        Header="Duration"
+                                        Width="55"
+                                        Binding="{Binding DurationText}"/>
+
                                     <DataGridTemplateColumn Header="Wwise Path"
                                                             Width="4*">
 

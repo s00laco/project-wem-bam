@@ -340,8 +340,20 @@ namespace WemBam
             SelectedFilenameTextBox.Text =
                 audioAsset.FileName;
 
-            SelectedDurationTextBox.Text =
-                audioAsset.Duration?.ToString() ?? string.Empty;
+            if (audioAsset.Duration is int duration)
+            {
+                if (duration == 0)
+                {
+                    duration = 1;
+                }
+
+                SelectedDurationTextBox.Text =
+                    TimeSpan.FromSeconds(duration).ToString(@"mm\:ss");
+            }
+            else
+            {
+                SelectedDurationTextBox.Text = string.Empty;
+            }
 
             SelectedLoopedTextBox.Text =
                 _selectedAudioAssetDetails.IsLooped ? "Yes" : "No";

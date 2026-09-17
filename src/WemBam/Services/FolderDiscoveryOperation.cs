@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using WemBam.Contracts;
 using WemBam.Models;
 using WemBam.Database;
+using WemBam.Services.Audio;
 
 namespace WemBam.Services
 {
@@ -117,6 +118,19 @@ namespace WemBam.Services
                             DatabaseManager.SetDefaultAudioAssetSource(
                                 audioAsset.Id,
                                 audioAssetSourceId);
+
+                            AudioStreamRequest request = new()
+                            {
+                                ContainerPath = null,
+                                AssetPath = filePath
+                            };
+
+                            audioAsset.Duration =
+                                AudioDurationService.GetDuration(request);
+
+                            DatabaseManager.UpdateAudioAssetDuration(
+                                audioAsset.Id,
+                                audioAsset.Duration);
                         }
 
                         processed++;
