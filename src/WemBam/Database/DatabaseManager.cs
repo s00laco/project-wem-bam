@@ -998,6 +998,8 @@ namespace WemBam.Database
 
             defaultSource.AssetPath,
 
+            audioAsset.FileId,
+
             audioAsset.Id AS AudioAssetId
 
         FROM AudioAssets audioAsset
@@ -1062,7 +1064,7 @@ namespace WemBam.Database
                 SELECT 1
                 FROM AudioAssetCollections membership
                 WHERE membership.AudioAssetId =
-                      audioAsset.Id
+                      audioAsset.FileId
                   AND membership.CollectionId =
                       $collectionId
             )
@@ -1139,8 +1141,11 @@ namespace WemBam.Database
                                 ? string.Empty
                                 : reader.GetString(6),
 
+                        FileId =
+                            reader.GetString(7),
+
                         AudioAssetId =
-                            reader.GetInt64(7)
+                            reader.GetInt64(8)
                     });
             }
 
@@ -1305,7 +1310,7 @@ namespace WemBam.Database
         }
 
         public static IReadOnlyList<long> GetCollectionIdsForAudioAsset(
-            long audioAssetId)
+            string fileId)
         {
             using SqliteConnection connection = OpenConnection();
 
@@ -1321,7 +1326,7 @@ namespace WemBam.Database
 
             command.Parameters.AddWithValue(
                 "$audioAssetId",
-                audioAssetId);
+                fileId);
 
             List<long> collectionIds = new();
 
@@ -1338,7 +1343,7 @@ namespace WemBam.Database
         }
 
         public static void SetAudioAssetCollections(
-            long audioAssetId,
+            string fileId,
             IEnumerable<long> collectionIds)
         {
             using SqliteConnection connection = OpenConnection();
@@ -1361,7 +1366,7 @@ namespace WemBam.Database
 
                 deleteCommand.Parameters.AddWithValue(
                     "$audioAssetId",
-                    audioAssetId);
+                    fileId);
 
                 deleteCommand.ExecuteNonQuery();
 
@@ -1388,7 +1393,7 @@ namespace WemBam.Database
 
                     insertCommand.Parameters.AddWithValue(
                         "$audioAssetId",
-                        audioAssetId);
+                        fileId);
 
                     insertCommand.Parameters.AddWithValue(
                         "$collectionId",

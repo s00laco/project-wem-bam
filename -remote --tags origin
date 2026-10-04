@@ -1,0 +1,17 @@
+v0.10-ba2-discovery
+v0.11-libvgmstream-interop
+v0.12-pcm-audio-decoding
+v0.13-audio-playback
+v0.14-Implement-Wwise-metadata-import
+v0.15-Implement-Search-MVP
+v0.16-mainwindow-rev1-audio-playback-r1
+v0.17-mainwindow-rev2-audio-collections-r1
+v0.18-main-window-rev-3-audio-file-metadata-r1
+v0.2-foundation-complete
+v0.3-logging
+v0.4-background-core
+v0.5-background-ui
+v0.6-AudioAsset-Pipeline
+v0.7-Discovery-Architecture
+v0.8-Mutagen-Ready
+v0.9-source-ids-linked

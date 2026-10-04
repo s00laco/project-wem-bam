@@ -254,7 +254,7 @@ namespace WemBam
             }
 
             CollectionMembershipDialog dialog =
-                new(result.AudioAssetId)
+                new(result.FileId)
     {
         Owner = this
     };

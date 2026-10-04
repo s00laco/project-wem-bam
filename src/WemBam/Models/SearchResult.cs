@@ -32,6 +32,8 @@ namespace WemBam.Models
 
         public long AudioAssetId { get; set; }
 
+        public string FileId { get; set; } = string.Empty;
+
         public string WwisePath { get; set; } = string.Empty;
 
         public string? ContainerPath { get; set; }

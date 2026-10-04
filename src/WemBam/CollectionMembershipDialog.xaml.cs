@@ -11,13 +11,13 @@ namespace WemBam
         private const string CollectionFilterPlaceholder =
             "Filter Collections...";
 
-        private readonly long _audioAssetId;
+        private readonly string _audioAssetId;
 
         public IReadOnlyList<long> SelectedCollectionIds { get; private set; } =
             Array.Empty<long>();
 
         public CollectionMembershipDialog(
-            long audioAssetId)
+            string audioAssetId)
         {
             InitializeComponent();
 
